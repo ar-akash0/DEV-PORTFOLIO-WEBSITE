@@ -75,4 +75,40 @@ Designed specifically for San Andreas Multiplayer (SA-MP) and open.mp backend ar
    Copy the example environment file:
    ```bash
    cp .env.example .env
-   
+Open .env (or configure config.php) and insert your database host, server IP, ports, and admin keys:
+
+DB_HOST=127.0.0.1
+DB_USER=your_db_user
+DB_PASS=your_db_password
+DB_NAME=your_db_name
+DB_PORT=3306
+
+SAMP_IP=127.0.0.1
+SAMP_PORT=7777
+
+ADMIN_PASSWORD=your_secure_password
+DISCORD_WEBHOOK_URL=
+
+3. Start the Local PHP Server:
+   php -S 127.0.0.1:8000
+
+4. Open your browser and navigate to:
+   http://127.0.0.1:8000
+
+---
+
+Security Notice:
+This repository contains sanitized code. No production passwords, private database credentials, or secret webhook tokens are tracked in this repository. Always keep your .env file listed inside .gitignore.
+
+---
+
+Developer:
+Md. Abdullah Rahman (knox-akash)
+- GitHub: https://github.com/ar-akash0
+- YouTube: https://www.youtube.com/@knox-empiree
+- Discord: https://discord.gg/NanDk8JbtZ
+
+---
+
+License:
+This project is licensed under the MIT License.
