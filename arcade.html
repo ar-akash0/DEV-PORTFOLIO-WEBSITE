@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>knox-akash // Cyber Arcade Studio 3D</title>
+  <link rel="icon" type="image/png" href="LOGO WB.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #030408;
+      --card: #080c16;
+      --card-border: rgba(0, 245, 196, 0.22);
+      --accent: #00f5c4;
+      --accent-glow: rgba(0, 245, 196, 0.35);
+      --gold: #fbbf24;
+      --text: #f0f4fc;
+      --muted: #79869c;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { 
+      background-color: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; 
+      min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 1rem; 
+      overflow-x: hidden; touch-action: manipulation;
+    }
+
+    .header-nav { 
+      width: 100%; max-width: 660px; display: flex; justify-content: space-between; 
+      align-items: center; margin-bottom: 0.75rem; border-bottom: 1px solid var(--card-border); padding-bottom: 0.65rem; 
+    }
+    .back-btn { 
+      font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); 
+      text-decoration: none; border: 1px solid var(--card-border); padding: 0.35rem 0.8rem; 
+      border-radius: 6px; background: rgba(0,245,196,0.06); transition: all 0.2s;
+    }
+    .back-btn:hover { background: var(--accent); color: #000; box-shadow: 0 0 15px var(--accent); }
+
+    .game-tabs { display: flex; gap: 0.4rem; margin-bottom: 0.75rem; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 660px; }
+    .tab-btn { 
+      background: var(--card); border: 1px solid var(--card-border); color: var(--muted); 
+      font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; padding: 0.45rem 0.85rem; 
+      border-radius: 8px; cursor: pointer; transition: all 0.2s; 
+    }
+    .tab-btn:hover, .tab-btn.active { 
+      color: #000; background: var(--accent); border-color: var(--accent); 
+      box-shadow: 0 0 20px rgba(0, 245, 196, 0.4); 
+    }
+
+    .canvas-container {
+      background: #010204; border: 2px solid rgba(0, 245, 196, 0.35); border-radius: 14px;
+      box-shadow: 0 10px 50px rgba(0,0,0,0.9), inset 0 0 30px rgba(0, 245, 196, 0.08);
+      position: relative; overflow: hidden; width: 100%; max-width: 620px; aspect-ratio: 4 / 3; 
+      display: flex; justify-content: center; align-items: center;
+    }
+    canvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
+
+    /* CRT Scanline & Cyber Vignette Overlay */
+    .crt-overlay {
+      position: absolute; inset: 0; pointer-events: none; z-index: 5;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      background-size: 100% 3px, 6px 100%;
+      box-shadow: inset 0 0 50px rgba(0,0,0,0.7);
+    }
+
+    /* Milestone Reward Banner */
+    .reward-banner {
+      position: absolute; top: 18%; left: 50%; transform: translate(-50%, -50%) scale(0);
+      background: rgba(5, 8, 15, 0.95); border: 2px solid var(--gold); border-radius: 12px;
+      padding: 0.85rem 1.6rem; text-align: center; pointer-events: none; z-index: 10;
+      box-shadow: 0 0 35px rgba(251, 191, 36, 0.5); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .reward-banner.show { transform: translate(-50%, -50%) scale(1); }
+    .reward-title { font-family: var(--font-mono); font-size: 1rem; font-weight: 800; color: var(--gold); text-transform: uppercase; letter-spacing: 0.08em; }
+    .reward-sub { font-family: var(--font-mono); font-size: 0.75rem; color: #fff; margin-top: 0.25rem; }
+
+    .hud-bar { 
+      width: 100%; max-width: 620px; display: flex; justify-content: space-between; 
+      font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; margin-top: 0.65rem; color: var(--accent); 
+    }
+    .game-instruction { 
+      width: 100%; max-width: 620px; text-align: center; font-family: var(--font-mono); 
+      font-size: 0.72rem; color: var(--muted); margin-top: 0.35rem; 
+    }
+
+    /* Mobile Virtual D-PAD Controls */
+    .mobile-controls {
+      display: flex; justify-content: center; gap: 2.2rem; margin-top: 0.85rem; width: 100%; max-width: 620px;
+    }
+    .pad-btn {
+      background: var(--card); border: 2px solid rgba(0, 245, 196, 0.4); color: var(--accent);
+      width: 72px; height: 72px; border-radius: 18px; display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono); font-size: 1.6rem; font-weight: 800; user-select: none;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.6); cursor: pointer; transition: transform 0.1s, background 0.1s;
+    }
+    .pad-btn:active {
+      transform: scale(0.92); background: var(--accent); color: #000; box-shadow: 0 0 25px var(--accent);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header-nav">
+    <a href="index.html" class="back-btn">&larr; Main Console</a>
+    <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent);">INFINITY ENGINE // DYNAMIC HARDCORE V3</span>
+  </div>
+
+  <!-- Game Switcher Tabs -->
+  <div class="game-tabs">
+    <button class="tab-btn active" onclick="loadGame('car')">🏎️ 01. OutRun Cyber Highway</button>
+    <button class="tab-btn" onclick="loadGame('ddos')">🛡️ 02. DDoS Defense Matrix</button>
+    <button class="tab-btn" onclick="loadGame('pong')">🏓 03. Neon Hyper Stadium</button>
+  </div>
+
+  <!-- Canvas Container with CRT Scanlines -->
+  <div class="canvas-container">
+    <div class="crt-overlay"></div>
+    <div id="reward-banner" class="reward-banner">
+      <div class="reward-title" id="reward-title">🏆 MILESTONE REACHED</div>
+      <div class="reward-sub" id="reward-sub">Bonus +100 Points Overdrive</div>
+    </div>
+    <canvas id="gameCanvas" width="600" height="450"></canvas>
+  </div>
+
+  <!-- HUD Status Bar -->
+  <div class="hud-bar">
+    <span id="hud-score">SCORE: 0</span>
+    <span id="hud-status" style="color: #cbd5e1;">ENGINE: MOUNTED</span>
+    <span id="hud-extra" style="color: #f87171;"></span>
+  </div>
+
+  <div class="game-instruction" id="game-help">
+    Endless hardcore cruise. Weave through traffic as velocity relentlessly accelerates!
+  </div>
+
+  <!-- Mobile D-PAD Controls -->
+  <div class="mobile-controls" id="controls-panel">
+    <div class="pad-btn" id="pad-btn-1">&larr;</div>
+    <div class="pad-btn" id="pad-btn-2">&rarr;</div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const hudScore = document.getElementById('hud-score');
+    const hudStatus = document.getElementById('hud-status');
+    const hudExtra = document.getElementById('hud-extra');
+    const gameHelp = document.getElementById('game-help');
+    const btn1 = document.getElementById('pad-btn-1');
+    const btn2 = document.getElementById('pad-btn-2');
+    const rewardBanner = document.getElementById('reward-banner');
+    const rewardTitle = document.getElementById('reward-title');
+    const rewardSub = document.getElementById('reward-sub');
+
+    let currentGame = 'car';
+    let animationId = null;
+    let score = 0;
+    let gameOver = false;
+    let nextMilestone = 100;
+    let shakeDuration = 0; // Screen Shake intensity
+
+    // Confetti particles for reward animation
+    let confettiParticles = [];
+
+    // Keys State
+    const keys = { left: false, right: false, up: false, down: false };
+
+    window.addEventListener('keydown', e => {
+      if (['ArrowLeft', 'KeyA'].includes(e.code)) keys.left = true;
+      if (['ArrowRight', 'KeyD'].includes(e.code)) keys.right = true;
+      if (['ArrowUp', 'KeyW'].includes(e.code)) keys.up = true;
+      if (['ArrowDown', 'KeyS'].includes(e.code)) keys.down = true;
+      if (['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
+    });
+
+    window.addEventListener('keyup', e => {
+      if (['ArrowLeft', 'KeyA'].includes(e.code)) keys.left = false;
+      if (['ArrowRight', 'KeyD'].includes(e.code)) keys.right = false;
+      if (['ArrowUp', 'KeyW'].includes(e.code)) keys.up = false;
+      if (['ArrowDown', 'KeyS'].includes(e.code)) keys.down = false;
+    });
+
+    function bindTouch(btn, onDown, onUp) {
+      btn.addEventListener('touchstart', (e) => { e.preventDefault(); onDown(); });
+      btn.addEventListener('touchend', (e) => { e.preventDefault(); onUp(); });
+      btn.addEventListener('mousedown', (e) => { onDown(); });
+      btn.addEventListener('mouseup', (e) => { onUp(); });
+    }
+
+    function setupControlsForGame(type) {
+      if (type === 'car') {
+        btn1.innerHTML = '&larr;'; btn2.innerHTML = '&rarr;';
+        bindTouch(btn1, () => keys.left = true, () => keys.left = false);
+        bindTouch(btn2, () => keys.right = true, () => keys.right = false);
+      } else if (type === 'pong') {
+        btn1.innerHTML = '&uarr;'; btn2.innerHTML = '&darr;';
+        bindTouch(btn1, () => keys.up = true, () => keys.up = false);
+        bindTouch(btn2, () => keys.down = true, () => keys.down = false);
+      } else {
+        btn1.innerHTML = '🛡️'; btn2.innerHTML = '⚡';
+      }
+    }
+
+    function triggerScreenShake(intensity = 15) {
+      shakeDuration = intensity;
+    }
+
+    // Trigger Reward / Milestone Animation
+    function triggerReward(title, sub, bonus = 50) {
+      score += bonus;
+      rewardTitle.textContent = title;
+      rewardSub.textContent = `${sub} (+${bonus} BONUS)`;
+      rewardBanner.classList.add('show');
+
+      const colors = ['#00f5c4', '#fbbf24', '#f43f5e', '#a855f7', '#38bdf8', '#ffffff'];
+      for (let i = 0; i < 60; i++) {
+        confettiParticles.push({
+          x: canvas.width / 2,
+          y: canvas.height * 0.35,
+          vx: (Math.random() - 0.5) * 14,
+          vy: (Math.random() - 0.7) * 14,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          size: Math.random() * 6 + 3,
+          life: 1.0
+        });
+      }
+
+      setTimeout(() => {
+        rewardBanner.classList.remove('show');
+      }, 2500);
+    }
+
+    function renderConfetti() {
+      for (let i = confettiParticles.length - 1; i >= 0; i--) {
+        const c = confettiParticles[i];
+        c.x += c.vx;
+        c.y += c.vy;
+        c.vy += 0.28;
+        c.life -= 0.018;
+
+        if (c.life <= 0) {
+          confettiParticles.splice(i, 1);
+          continue;
+        }
+
+        ctx.fillStyle = c.color;
+        ctx.shadowColor = c.color;
+        ctx.shadowBlur = 10;
+        ctx.fillRect(c.x, c.y, c.size, c.size);
+        ctx.shadowBlur = 0;
+      }
+    }
+
+    function loadGame(type) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      currentGame = type;
+      cancelAnimationFrame(animationId);
+      gameOver = false;
+      score = 0;
+      nextMilestone = 100;
+      shakeDuration = 0;
+      confettiParticles = [];
+      rewardBanner.classList.remove('show');
+      hudScore.textContent = `SCORE: 0`;
+      hudExtra.textContent = '';
+      setupControlsForGame(type);
+
+      if (type === 'car') {
+        gameHelp.textContent = 'Infinite Hardcore OutRun! Police Interceptors deploy as difficulty elevates.';
+        initCarGame();
+      } else if (type === 'ddos') {
+        gameHelp.textContent = 'Multi-Vector Packet Defense! Block volumetric waves as attacks aggressively compound.';
+        initDDoSGame();
+      } else if (type === 'pong') {
+        gameHelp.textContent = 'Cyber Neon Arena! Ball velocity endlessly accelerates after each rally impact.';
+        initPongGame();
+      }
+    }
+
+    /* ============================================================
+       GAME 1: 3D OUTRUN CYBER HIGHWAY (Non-Stop Hardcore Progression)
+    ============================================================ */
+    function initCarGame() {
+      let playerX = 0;
+      let speed = 0.007; // Starts smooth and cruiseable
+      let roadOffset = 0;
+      let traffic = [];
+      let lastSpawn = 0;
+      let policeBlink = false;
+
+      const carPalettes = [
+        { main: '#f43f5e', glow: '#fb7185', type: 'Cheetah' },      // Crimson
+        { main: '#eab308', glow: '#fde047', type: 'Taxi' },         // Yellow Taxi
+        { main: '#a855f7', glow: '#c084fc', type: 'Sultan' },       // Purple
+        { main: '#38bdf8', glow: '#7dd3fc', type: 'Elegy' },        // Sky Blue
+        { main: '#ffffff', glow: '#cbd5e1', type: 'Police' }        // Siren Cop
+      ];
+
+      hudStatus.textContent = "INFERNUS V8 // GEAR 1 (CRUISE)";
+
+      setInterval(() => { policeBlink = !policeBlink; }, 120);
+
+      function spawnTraffic() {
+        const now = Date.now();
+        // Spawning accelerates relentlessly as score climbs
+        const spawnDelay = Math.max(480, 1350 - (score * 1.8));
+
+        if (now - lastSpawn > spawnDelay && Math.random() < 0.08) {
+          lastSpawn = now;
+          const isCop = score >= 150 && Math.random() < 0.35;
+          const pal = isCop ? carPalettes[4] : carPalettes[Math.floor(Math.random() * 4)];
+
+          traffic.push({
+            x: (Math.random() * 1.55) - 0.77,
+            z: 1.0,
+            speed: 0.003 + (score * 0.00003) + (isCop ? 0.004 : 0),
+            palette: pal,
+            isCop: isCop,
+            lateralWander: (Math.random() - 0.5) * 0.006 // Cars gently switch lanes at higher levels!
+          });
+        }
+      }
+
+      function loop() {
+        if (gameOver) { drawGameOver(); return; }
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Screen Shake Engine
+        ctx.save();
+        if (shakeDuration > 0) {
+          const rx = (Math.random() - 0.5) * shakeDuration;
+          const ry = (Math.random() - 0.5) * shakeDuration;
+          ctx.translate(rx, ry);
+          shakeDuration *= 0.88;
+        }
+
+        // 1. Cyber Synthwave Horizon Sky & Sun
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, 185);
+        skyGrad.addColorStop(0, '#020306');
+        skyGrad.addColorStop(1, '#0e182e');
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, canvas.width, 185);
+
+        // Neon Sun
+        const sunGrad = ctx.createLinearGradient(300, 110, 300, 185);
+        sunGrad.addColorStop(0, '#fbbf24');
+        sunGrad.addColorStop(1, '#f43f5e');
+        ctx.fillStyle = sunGrad;
+        ctx.beginPath();
+        ctx.arc(300, 185, 75, Math.PI, 0);
+        ctx.fill();
+
+        // 2. Pseudo-3D Perspective Road
+        roadOffset = (roadOffset + speed * 180) % 40;
+        const horizonY = 175;
+        const bottomY = canvas.height;
+
+        ctx.fillStyle = '#090d16';
+        ctx.beginPath();
+        ctx.moveTo(225, horizonY); ctx.lineTo(375, horizonY);
+        ctx.lineTo(580, bottomY); ctx.lineTo(20, bottomY);
+        ctx.closePath();
+        ctx.fill();
+
+        // Road Neon Curbs
+        ctx.strokeStyle = 'rgba(0, 245, 196, 0.35)';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Perspective Dynamic Stripes
+        for (let i = 0; i < 8; i++) {
+          let segZ = (i * 40 + roadOffset) / 320;
+          if (segZ > 1) segZ -= 1;
+          const y = horizonY + (bottomY - horizonY) * (segZ * segZ);
+          const w = 4 + 22 * segZ;
+          ctx.fillStyle = (i % 2 === 0) ? '#00f5c4' : 'rgba(255,255,255,0.45)';
+          ctx.fillRect(300 - w / 2, y, w, 7 * segZ + 1);
+        }
+
+        // Steer Response (Tuned for precise dodges)
+        if (keys.left && playerX > -0.86) playerX -= 0.048;
+        if (keys.right && playerX < 0.86) playerX += 0.048;
+
+        // 3. Traffic Loop & Non-Stop Difficulty Progression
+        spawnTraffic();
+        for (let i = traffic.length - 1; i >= 0; i--) {
+          const t = traffic[i];
+          t.z -= (speed + t.speed);
+          t.x += t.lateralWander; // AI Lane drifting
+
+          const pZ = 1.0 - t.z;
+          if (pZ > 0) {
+            const screenY = horizonY + (bottomY - horizonY) * (pZ * pZ);
+            const roadWidthAtY = 150 + (560 - 150) * (pZ * pZ);
+            const screenX = 300 + (t.x * roadWidthAtY * 0.48);
+
+            const scale = Math.max(0.15, pZ);
+            const carW = 52 * scale;
+            const carH = 34 * scale;
+
+            // Draw Traffic Car
+            ctx.fillStyle = t.palette.main;
+            ctx.shadowColor = t.palette.glow;
+            ctx.shadowBlur = 10 * scale;
+            ctx.fillRect(screenX - carW / 2, screenY - carH, carW, carH);
+            ctx.shadowBlur = 0;
+
+            // Windshield
+            ctx.fillStyle = '#05070d';
+            ctx.fillRect(screenX - carW * 0.35, screenY - carH * 0.85, carW * 0.7, carH * 0.35);
+
+            // Police Interceptor Siren Bar
+            if (t.isCop) {
+              ctx.fillStyle = policeBlink ? '#ef4444' : '#3b82f6';
+              ctx.shadowColor = policeBlink ? '#ef4444' : '#3b82f6';
+              ctx.shadowBlur = 12 * scale;
+              ctx.fillRect(screenX - carW * 0.25, screenY - carH - (4 * scale), carW * 0.5, 4 * scale);
+              ctx.shadowBlur = 0;
+            }
+
+            // Tail Lights
+            ctx.fillStyle = '#ff1111';
+            ctx.fillRect(screenX - carW * 0.45, screenY - 5 * scale, carW * 0.25, 4 * scale);
+            ctx.fillRect(screenX + carW * 0.2, screenY - 5 * scale, carW * 0.25, 4 * scale);
+
+            // Fair Accurate Bounding Box Collision
+            if (pZ > 0.85 && pZ < 1.03) {
+              const playerScreenX = 300 + (playerX * 520 * 0.48);
+              if (Math.abs(screenX - playerScreenX) < (carW * 0.65)) {
+                triggerScreenShake(20);
+                gameOver = true;
+              }
+            }
+          }
+
+          if (t.z <= 0) {
+            traffic.splice(i, 1);
+            score += 15;
+            hudScore.textContent = `SCORE: ${score}`;
+
+            // RELENTLESS VELOCITY ACCELERATION
+            speed += 0.00012; // Increases forever!
+
+            // Milestone Checks
+            if (score >= nextMilestone) {
+              triggerReward("🏆 VELOCITY OVERDRIVE", `Cruising at Hyper Stage (x${(speed * 1000).toFixed(0)})`);
+              nextMilestone += 140;
+              hudStatus.textContent = `INFERNUS // HYPERDRIVE STAGE ${(nextMilestone/140).toFixed(0)}`;
+            }
+          }
+        }
+
+        // 4. Draw Player Car (Infernus Rear)
+        const pScreenX = 300 + (playerX * 520 * 0.48);
+        const pScreenY = 390;
+
+        // Underglow
+        ctx.fillStyle = 'rgba(0, 245, 196, 0.35)';
+        ctx.beginPath();
+        ctx.ellipse(pScreenX, pScreenY + 18, 44, 11, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Main Body
+        ctx.fillStyle = '#00f5c4';
+        ctx.shadowColor = '#00f5c4';
+        ctx.shadowBlur = 18;
+        ctx.fillRect(pScreenX - 32, pScreenY - 26, 64, 38);
+        ctx.shadowBlur = 0;
+
+        // Spoiler & Glass
+        ctx.fillStyle = '#060911';
+        ctx.fillRect(pScreenX - 36, pScreenY - 32, 72, 6);
+        ctx.fillRect(pScreenX - 22, pScreenY - 20, 44, 15);
+
+        // Exhaust Fire Stream (Expands as speed increases)
+        const flameLength = 6 + Math.min(25, speed * 1400) + (Math.random() * 8);
+        ctx.fillStyle = '#38bdf8';
+        ctx.shadowColor = '#38bdf8';
+        ctx.shadowBlur = 15;
+        ctx.fillRect(pScreenX - 21, pScreenY + 12, 8, flameLength);
+        ctx.fillRect(pScreenX + 13, pScreenY + 12, 8, flameLength);
+        ctx.shadowBlur = 0;
+
+        renderConfetti();
+        ctx.restore();
+
+        animationId = requestAnimationFrame(loop);
+      }
+      loop();
+    }
+
+    /* ============================================================
+       GAME 2: 3D CYBER DEFENSE MATRIX (Endless Swarm Escalation)
+    ============================================================ */
+    function initDDoSGame() {
+      let packets = [];
+      let sparks = [];
+      let serverHealth = 100;
+      let baseSpeed = 1.6;
+      let spawnTimer = 0;
+      let currentLevel = 1;
+
+      hudStatus.textContent = "THREAT MATRIX: LVL 1 [NORMAL]";
+      hudExtra.textContent = `HEALTH: 100%`;
+
+      function createSparks(x, y, color) {
+        for (let i = 0; i < 18; i++) {
+          sparks.push({
+            x: x, y: y,
+            vx: (Math.random() - 0.5) * 8,
+            vy: (Math.random() - 0.5) * 8,
+            color: color,
+            life: 1.0
+          });
+        }
+      }
+
+      function handleAction(clientX, clientY) {
+        const rect = canvas.getBoundingClientRect();
+        const clickX = (clientX - rect.left) * (canvas.width / rect.width);
+        const clickY = (clientY - rect.top) * (canvas.height / rect.height);
+
+        for (let i = packets.length - 1; i >= 0; i--) {
+          const p = packets[i];
+          const dist = Math.hypot(p.x - clickX, p.y - clickY);
+          
+          if (dist < p.radius + 18) {
+            p.hp--;
+            createSparks(p.x, p.y, p.color);
+
+            if (p.isHeal) {
+              serverHealth = Math.min(100, serverHealth + 25);
+              hudExtra.textContent = `HEALTH: ${serverHealth}%`;
+              packets.splice(i, 1);
+              break;
+            }
+
+            if (p.hp <= 0) {
+              score += p.scoreVal;
+              hudScore.textContent = `BLOCKED: ${score}`;
+              packets.splice(i, 1);
+
+              // Non-stop Difficulty Scaling
+              baseSpeed += 0.04;
+
+              if (score >= nextMilestone) {
+                triggerReward("🛡️ PACKET PURGE COMPLETE", "Root Supercharge Deployed");
+                triggerScreenShake(12);
+                nextMilestone += 130;
+                serverHealth = Math.min(100, serverHealth + 35);
+                hudExtra.textContent = `HEALTH: ${serverHealth}%`;
+                packets = []; // Clears screen as reward
+              }
+
+              const newLvl = Math.floor(score / 50) + 1;
+              if (newLvl !== currentLevel) {
+                currentLevel = newLvl;
+                const titles = ["NORMAL", "ELEVATED", "SYN-FLOOD", "VOLUMETRIC BOTNET", "CRITICAL OVERLOAD", "ZERO-DAY INVASION"];
+                hudStatus.textContent = `THREAT: LVL ${currentLevel} [${titles[Math.min(currentLevel - 1, titles.length - 1)]}]`;
+              }
+            }
+            break;
+          }
+        }
+      }
+
+      canvas.onpointerdown = (e) => handleAction(e.clientX, e.clientY);
+
+      function loop() {
+        if (gameOver) { drawGameOver(); return; }
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        ctx.save();
+        if (shakeDuration > 0) {
+          ctx.translate((Math.random() - 0.5) * shakeDuration, (Math.random() - 0.5) * shakeDuration);
+          shakeDuration *= 0.88;
+        }
+
+        // Server Rack Isometric Floor
+        ctx.strokeStyle = 'rgba(0, 245, 196, 0.08)';
+        ctx.lineWidth = 1;
+        for (let x = 0; x <= canvas.width; x += 30) {
+          ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+        }
+        for (let y = 0; y <= canvas.height; y += 30) {
+          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+        }
+
+        // Server Base Bay
+        ctx.fillStyle = '#060a12';
+        ctx.strokeStyle = serverHealth > 30 ? 'var(--accent)' : '#f87171';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(20, 380, 560, 52);
+        ctx.fillRect(20, 380, 560, 52);
+
+        ctx.fillStyle = serverHealth > 30 ? 'var(--accent)' : '#f87171';
+        ctx.font = 'bold 12px monospace';
+        ctx.fillText(`DAEMON CLUSTER :7777 [BSRP] - HEALTH: ${serverHealth}% (LEVEL ${currentLevel})`, 45, 412);
+
+        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        ctx.fillRect(380, 400, 180, 14);
+        ctx.fillStyle = serverHealth > 30 ? 'var(--accent)' : '#f87171';
+        ctx.fillRect(380, 400, (180 * (serverHealth / 100)), 14);
+
+        // Spawn Interval Shrinks Endlessly
+        spawnTimer++;
+        const spawnDelay = Math.max(16, 45 - currentLevel * 3);
+        if (spawnTimer % spawnDelay === 0) {
+          const rand = Math.random();
+          let pType = 'udp';
+
+          if (rand < 0.07) pType = 'heal';
+          else if (rand < 0.32 && currentLevel >= 2) pType = 'syn';
+          else if (rand < 0.52 && currentLevel >= 3) pType = 'tank';
+
+          if (pType === 'heal') {
+            packets.push({ x: Math.random() * 480 + 60, y: 0, speed: 2.2, radius: 18, hp: 1, color: '#22c55e', text: '+PATCH', scoreVal: 0, isHeal: true });
+          } else if (pType === 'syn') {
+            packets.push({ x: Math.random() * 480 + 60, y: 0, speed: baseSpeed * 1.5, radius: 20, hp: 1, color: '#facc15', text: '⚡SYN', scoreVal: 25, isHeal: false });
+          } else if (pType === 'tank') {
+            packets.push({ x: Math.random() * 480 + 60, y: 0, speed: baseSpeed * 0.85, radius: 28, hp: 2, color: '#c084fc', text: '💣TANK', scoreVal: 40, isHeal: false });
+          } else {
+            packets.push({ x: Math.random() * 480 + 60, y: 0, speed: baseSpeed + (Math.random() * 0.6), radius: 22, hp: 1, color: '#f87171', text: 'UDP', scoreVal: 15, isHeal: false });
+          }
+        }
+
+        // Render Packets
+        for (let i = packets.length - 1; i >= 0; i--) {
+          const p = packets[i];
+          p.y += p.speed;
+
+          ctx.strokeStyle = p.color;
+          ctx.lineWidth = 2;
+          ctx.shadowColor = p.color;
+          ctx.shadowBlur = 12;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.fillStyle = p.hp > 1 ? '#4c1d95' : p.color;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 10px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(p.hp > 1 ? `${p.text} [${p.hp}]` : p.text, p.x, p.y + 4);
+          ctx.textAlign = 'start';
+
+          if (p.y >= 380) {
+            createSparks(p.x, 380, p.color);
+            triggerScreenShake(8);
+            packets.splice(i, 1);
+            if (!p.isHeal) {
+              serverHealth -= (p.hp > 1 ? 25 : 15);
+              hudExtra.textContent = `HEALTH: ${serverHealth}%`;
+              if (serverHealth <= 0) gameOver = true;
+            }
+          }
+        }
+
+        // Sparks
+        for (let i = sparks.length - 1; i >= 0; i--) {
+          const s = sparks[i];
+          s.x += s.vx; s.y += s.vy; s.life -= 0.04;
+          if (s.life <= 0) { sparks.splice(i, 1); continue; }
+          ctx.fillStyle = s.color;
+          ctx.fillRect(s.x, s.y, 3, 3);
+        }
+
+        renderConfetti();
+        ctx.restore();
+
+        animationId = requestAnimationFrame(loop);
+      }
+      loop();
+    }
+
+    /* ============================================================
+       GAME 3: NEON HYPER STADIUM (Infinite Ball Velocity)
+    ============================================================ */
+    function initPongGame() {
+      let pY = 180, cpuY = 180;
+      let bX = 300, bY = 220;
+      let bVX = 5.2, bVY = 3.4;
+      let trails = [];
+      hudStatus.textContent = "STADIUM NODE // ENDLESS MATCH";
+
+      canvas.onpointermove = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const touchY = (e.clientY - rect.top) * (canvas.height / rect.height);
+        pY = Math.max(10, Math.min(canvas.height - 95, touchY - 45));
+      };
+
+      function loop() {
+        if (gameOver) { drawGameOver(); return; }
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        ctx.save();
+        if (shakeDuration > 0) {
+          ctx.translate((Math.random() - 0.5) * shakeDuration, (Math.random() - 0.5) * shakeDuration);
+          shakeDuration *= 0.88;
+        }
+
+        // Arena Boundaries
+        ctx.strokeStyle = 'rgba(0, 245, 196, 0.2)';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(10, 10, 580, 430);
+
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.setLineDash([12, 12]);
+        ctx.beginPath(); ctx.moveTo(300, 10); ctx.lineTo(300, 440); ctx.stroke();
+        ctx.setLineDash([]);
+
+        if (keys.up && pY > 15) pY -= 7.5;
+        if (keys.down && pY < canvas.height - 100) pY += 7.5;
+
+        // CPU adapts to ball speed
+        const cpuSpeed = 3.6 + Math.min(5.5, Math.abs(bVX) * 0.35);
+        if (cpuY + 45 < bY) cpuY += cpuSpeed;
+        else if (cpuY + 45 > bY) cpuY -= cpuSpeed;
+
+        bX += bVX; bY += bVY;
+        trails.push({ x: bX, y: bY });
+        if (trails.length > 10) trails.shift();
+
+        if (bY <= 15 || bY >= canvas.height - 25) {
+          bVY *= -1;
+          triggerScreenShake(3);
+        }
+
+        // Player Impact
+        if (bX <= 38 && bY >= pY && bY <= pY + 90) {
+          bVX = (Math.abs(bVX) + 0.35); // Endlessly speeds up!
+          score += 15;
+          triggerScreenShake(5);
+          hudScore.textContent = `SCORE: ${score}`;
+          if (score >= nextMilestone) {
+            triggerReward("⚡ HYPER VOLLEY", `Ball Velocity Warp x${Math.abs(bVX).toFixed(1)}`);
+            nextMilestone += 110;
+          }
+        }
+
+        // CPU Impact
+        if (bX >= 560 && bY >= cpuY && bY <= cpuY + 90) {
+          bVX = -(Math.abs(bVX) + 0.35);
+          triggerScreenShake(5);
+        }
+
+        if (bX < 5) {
+          triggerScreenShake(15);
+          gameOver = true;
+        }
+        if (bX > canvas.width) {
+          bX = 300; bY = 220;
+          bVX = -5.5;
+          score += 50;
+          hudScore.textContent = `SCORE: ${score}`;
+        }
+
+        for (let i = 0; i < trails.length; i++) {
+          ctx.fillStyle = `rgba(0, 245, 196, ${i / 12})`;
+          ctx.fillRect(trails[i].x, trails[i].y, 11, 11);
+        }
+
+        ctx.fillStyle = '#00f5c4';
+        ctx.shadowColor = '#00f5c4'; ctx.shadowBlur = 20;
+        ctx.fillRect(20, pY, 14, 90);
+
+        ctx.fillStyle = '#f43f5e';
+        ctx.shadowColor = '#f43f5e'; ctx.shadowBlur = 20;
+        ctx.fillRect(566, cpuY, 14, 90);
+        ctx.shadowBlur = 0;
+
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(bX, bY, 12, 12);
+
+        renderConfetti();
+        ctx.restore();
+
+        animationId = requestAnimationFrame(loop);
+      }
+      loop();
+    }
+
+    function drawGameOver() {
+      ctx.fillStyle = 'rgba(2, 4, 8, 0.94)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#f87171';
+      ctx.font = '800 24px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText("CRITICAL COLLISION // SYSTEM CRASHED", canvas.width / 2, 195);
+      ctx.fillStyle = '#00f5c4';
+      ctx.font = '700 15px monospace';
+      ctx.fillText(`FINAL TELEMETRY SCORE: ${score}`, canvas.width / 2, 235);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = '12px monospace';
+      ctx.fillText("Tap / Click any tab above to reboot engine", canvas.width / 2, 275);
+      ctx.textAlign = 'start';
+    }
+
+    // Default Load Car Game
+    setupControlsForGame('car');
+    initCarGame();
+  </script>
+</body>
+</html>

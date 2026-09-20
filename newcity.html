@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>knox-akash // Project NewCity Deep-Dive</title>
+  <link rel="icon" type="image/png" href="LOGO WB.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #05070b;
+      --card: #0c1018;
+      --card-border: rgba(0, 245, 196, 0.18);
+      --accent: #00f5c4;
+      --accent-dim: rgba(0, 245, 196, 0.08);
+      --text: #f0f4fc;
+      --muted: #79869c;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.6; padding: 1.5rem 1rem 4rem; }
+    .container { max-width: 950px; margin: 0 auto; }
+    .header-nav { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem; }
+    .back-btn { font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); text-decoration: none; border: 1px solid var(--card-border); padding: 0.35rem 0.75rem; border-radius: 6px; background: var(--accent-dim); }
+    .back-btn:hover { background: var(--accent); color: #000; }
+    .hero-title { font-size: clamp(1.8rem, 4.5vw, 2.8rem); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.3rem; }
+    .hero-sub { color: var(--muted); font-family: var(--font-mono); font-size: 0.78rem; margin-bottom: 1.5rem; }
+    .card { background: var(--card); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.4rem; margin-bottom: 1.25rem; }
+    .progress-track { height: 14px; background: rgba(255,255,255,0.06); border-radius: 999px; overflow: hidden; margin: 0.8rem 0; border: 1px solid rgba(255,255,255,0.1); }
+    .progress-fill { height: 100%; width: 30%; background: linear-gradient(90deg, #00f5c4, #38bdf8); box-shadow: 0 0 15px var(--accent); transition: width 1s ease-in-out; }
+    .grid-specs { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 0.75rem; margin-top: 1rem; font-family: var(--font-mono); }
+    .spec-item { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.06); padding: 0.85rem; border-radius: 8px; }
+    .spec-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; }
+    .spec-val { font-size: 0.85rem; font-weight: 700; color: var(--accent); margin-top: 0.2rem; word-break: break-all; }
+    .roadmap-list { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem; font-family: var(--font-mono); font-size: 0.78rem; }
+    .roadmap-item { padding: 0.75rem 1rem; background: rgba(0,0,0,0.3); border-left: 3px solid var(--accent); border-radius: 4px; }
+    .roadmap-item.pending { border-color: var(--muted); color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header-nav">
+      <a href="index.html" class="back-btn">&larr; Return to Telemetry</a>
+      <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted);">PROJECT ID: R&amp;D-NEWCITY</span>
+    </div>
+
+    <h1 class="hero-title">Project NewCity</h1>
+    <div class="hero-sub">[ NEXT-GENERATION SA-MP / OPEN.MP MULTIPLAYER ROLEPLAY CORE ]</div>
+
+    <!-- Active Test Server Box -->
+    <div class="card" style="border-color: rgba(0, 245, 196, 0.4);">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+        <div>
+          <span style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--accent); font-weight: 700;">★ OFFICIAL DEV TESTBED SOCKET</span>
+          <h3 style="font-size: 1.1rem; color: #fff; margin-top: 0.2rem;">ams-game-01.centnodes.net:40042</h3>
+        </div>
+        <button class="back-btn" onclick="navigator.clipboard.writeText('ams-game-01.centnodes.net:40042'); this.textContent='COPIED!';">COPY TEST IP</button>
+      </div>
+      <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); margin-top: 0.6rem;">
+        Dedicated test container hosted on CentNodes. Use SA-MP 0.3.7 client to connect when live test sessions are active.
+      </div>
+    </div>
+
+    <!-- Progress Card -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); font-weight: 700;">ENGINEERING PROGRESS</span>
+        <span id="nc-page-badge" style="font-family: var(--font-mono); font-size: 0.72rem; color: #fff; background: var(--accent-dim); border: 1px solid var(--accent); padding: 0.15rem 0.5rem; border-radius: 4px;">30% COMPILED</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="nc-page-bar" style="width: 30%;"></div>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted);">
+        <span id="nc-page-status">ARCHITECTURE &amp; SCHEMA POOLING</span>
+        <span id="nc-page-percent">30% Complete</span>
+      </div>
+    </div>
+
+    <!-- Specs Card -->
+    <div class="card">
+      <h2 style="font-size: 1.15rem; margin-bottom: 0.5rem; color: #fff;">System Architecture &amp; Persistence</h2>
+      <p id="nc-page-desc" style="color: var(--muted); font-size: 0.88rem; line-height: 1.6;">
+        Handcrafted latest-generation SA-MP / open.mp core roleplay framework. Engineered from the ground up featuring modular state handling, dynamic economy flow, CentNodes remote database persistence, and optimized network callbacks.
+      </p>
+      <div class="grid-specs">
+        <div class="spec-item">
+          <div class="spec-label">Testbed Host</div>
+          <div class="spec-val">ams-game-01.centnodes.net:40042</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Database Cluster</div>
+          <div class="spec-val" id="nc-page-db-cluster">ams-game-db-01.centnodes.net</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Target Schema</div>
+          <div class="spec-val" id="nc-page-db-schema">s1651_newcity</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">DB User Identity</div>
+          <div class="spec-val" id="nc-page-db-user">u1651_meRbC56wZK</div>
+        </div>
+      </div>
+      <div style="margin-top: 1.25rem;">
+        <a id="nc-page-drive" href="https://drive.google.com/drive/folders/1wRqzVosafgKHUy6EwMR38t8CqqMykGIz?dmr=1&ec=wgc-drive-%5Bmodule%5D-goto" target="_blank" class="back-btn" style="display: inline-block; padding: 0.5rem 1rem;">
+          &blacktriangleright; Open Project Source Drive Folder &rarr;
+        </a>
+      </div>
+    </div>
+
+    <!-- Production Roadmap (Dynamically Loaded) -->
+    <div class="card">
+      <h2 style="font-size: 1.15rem; margin-bottom: 0.5rem; color: #fff;">Production Roadmap</h2>
+      <ul class="roadmap-list" id="roadmap-container">
+        <!-- Rendered via newcity.json -->
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    async function syncDeepDive() {
+      try {
+        const res = await fetch('newcity.json?t=' + Date.now());
+        if (res.ok) {
+          const d = await res.json();
+          if (d.progress !== undefined) {
+            document.getElementById('nc-page-bar').style.width = d.progress + '%';
+            document.getElementById('nc-page-percent').textContent = d.progress + '% Complete';
+          }
+          if (d.badge) document.getElementById('nc-page-badge').textContent = d.badge;
+          if (d.status_text) document.getElementById('nc-page-status').textContent = d.status_text;
+          if (d.desc) document.getElementById('nc-page-desc').textContent = d.desc;
+          if (d.db_cluster) document.getElementById('nc-page-db-cluster').textContent = d.db_cluster;
+          if (d.db_schema) document.getElementById('nc-page-db-schema').textContent = d.db_schema;
+          if (d.db_user) document.getElementById('nc-page-db-user').textContent = d.db_user;
+          if (d.drive_link) document.getElementById('nc-page-drive').href = d.drive_link;
+
+          // Render roadmap items
+          const rmBox = document.getElementById('roadmap-container');
+          rmBox.innerHTML = '';
+          const roadmap = d.roadmap || [
+            { title: "Phase 01: Core Architecture", desc: "Connection pooling with CentNodes MySQL, basic modular gamemode architecture.", done: true },
+            { title: "Phase 02: Economy & Dynamic Systems (30%)", desc: "Relational schemas, sub-tick data syncing, vehicle asset streaming.", done: true },
+            { title: "Phase 03: High-Latency Mobile Adaptation", desc: "Packet drop resilience and cellular sync optimizations.", done: false },
+            { title: "Phase 04: Production Deployment & Hardening", desc: "Linux systemd daemonizing and firewall rate limiting.", done: false }
+          ];
+
+          roadmap.forEach(item => {
+            const li = document.createElement('li');
+            li.className = item.done ? 'roadmap-item' : 'roadmap-item pending';
+            li.innerHTML = `• <strong>${item.title}</strong> — ${item.desc}`;
+            rmBox.appendChild(li);
+          });
+        }
+      } catch (e) {}
+    }
+    syncDeepDive();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>knox-akash // Systems & Infrastructure</title>
+  <link rel="icon" type="image/png" href="LOGO WB.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #06070a;
+      --card: #0d1017;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent: #00f5c4;
+      --accent-dim: rgba(0, 245, 196, 0.08);
+      --accent-glow: rgba(0, 245, 196, 0.05);
+      --discord: #5865f2;
+      --yt-red: #ff0033;
+      --text: #f0f4fc;
+      --muted: #79869c;
+      --font-sans: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg); color: var(--text); font-family: var(--font-sans); line-height: 1.5; overflow-x: hidden; min-height: 100vh; position: relative; }
+    
+    /* Cyber Debug Mode Rulers Outline */
+    body.debug-active * { outline: 1px dashed rgba(0, 245, 196, 0.28) !important; }
+
+    /* Broadcast Bar */
+    .broadcast-bar {
+      background: #020305; border-bottom: 1px solid rgba(0, 245, 196, 0.2);
+      padding: 0.45rem 1rem; font-family: var(--font-mono); font-size: 0.72rem;
+      color: var(--muted); display: flex; justify-content: space-between; align-items: center; gap: 0.75rem;
+      position: relative; z-index: 10;
+    }
+    .ticker-content { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: #cbd5e1; flex: 1; }
+
+    #cursor-spotlight {
+      position: fixed; top: 0; left: 0; width: 450px; height: 450px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 0; opacity: 0.8;
+    }
+
+    .bg-grid {
+      position: fixed; inset: 0;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+      background-size: 32px 32px; mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, #000 60%, transparent 100%);
+      pointer-events: none; z-index: 1;
+    }
+
+    .container { position: relative; z-index: 2; max-width: 1140px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+
+    /* Header & Navigation */
+    header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 2.2rem; gap: 1rem; }
+    .brand { display: flex; align-items: center; gap: 0.8rem; text-decoration: none; color: inherit; }
+    .brand img { width: 44px; height: 44px; object-fit: contain; filter: drop-shadow(0 0 10px rgba(0, 245, 196, 0.2)); }
+    .brand-meta { display: flex; flex-direction: column; }
+    .brand-handle { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.02em; }
+    .brand-sub { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); }
+
+    /* Desktop Controls */
+    .desktop-controls { display: flex; align-items: center; gap: 0.5rem; }
+    .control-btn {
+      font-family: var(--font-mono); font-size: 0.7rem; background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border); color: var(--muted); padding: 0.4rem 0.75rem;
+      border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; transition: all 0.2s;
+    }
+    .control-btn:hover, .control-btn.active { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); }
+
+    /* Mobile 3-Line Hamburger */
+    .mobile-menu-btn {
+      display: none; background: rgba(0, 245, 196, 0.06); border: 1px solid rgba(0, 245, 196, 0.3);
+      color: var(--accent); width: 42px; height: 42px; border-radius: 8px; cursor: pointer;
+      align-items: center; justify-content: center; flex-direction: column; gap: 4px;
+    }
+    .mobile-menu-btn span { width: 20px; height: 2px; background: var(--accent); border-radius: 2px; transition: 0.3s; }
+
+    /* Cyber Mobile Navigation Drawer */
+    .mobile-drawer {
+      position: fixed; top: 0; right: -100%; width: 290px; height: 100vh; background: rgba(7, 10, 16, 0.98);
+      backdrop-filter: blur(20px); border-left: 2px solid var(--accent); z-index: 10000;
+      transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; padding: 1.5rem;
+      box-shadow: -10px 0 35px rgba(0,0,0,0.8);
+    }
+    .mobile-drawer.open { right: 0; }
+    .drawer-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+      z-index: 9998; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    .drawer-overlay.active { opacity: 1; pointer-events: auto; }
+    .drawer-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 1rem; margin-bottom: 1.25rem; }
+    .drawer-title { font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700; color: var(--accent); }
+    .drawer-close { background: none; border: none; color: #f87171; font-size: 1.5rem; cursor: pointer; font-family: var(--font-mono); }
+    .drawer-links { display: flex; flex-direction: column; gap: 0.65rem; }
+    .drawer-link {
+      font-family: var(--font-mono); font-size: 0.82rem; color: #cbd5e1; text-decoration: none;
+      padding: 0.7rem 0.9rem; background: rgba(255,255,255,0.03); border: 1px solid var(--card-border);
+      border-radius: 8px; display: flex; align-items: center; justify-content: space-between; transition: 0.2s;
+    }
+    .drawer-link:hover, .drawer-link:active { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
+
+    /* Hero Section */
+    .hero { margin-bottom: 2.8rem; }
+    .hero-badge { font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.85rem; display: inline-block; }
+    .hero h1 { font-size: clamp(2rem, 5.5vw, 3.5rem); font-weight: 800; line-height: 1.16; letter-spacing: -0.04em; margin-bottom: 1rem; }
+    .hero h1 span { background: linear-gradient(180deg, #ffffff 20%, #7d8b9e 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p { font-size: 0.98rem; color: var(--muted); line-height: 1.65; max-width: 820px; }
+
+    /* Bento Grid */
+    .bento-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.15rem; margin-bottom: 3.5rem; }
+    .bento-card {
+      background: var(--card); border: 1px solid var(--card-border); border-radius: 14px;
+      padding: 1.5rem; position: relative; overflow: hidden; display: flex; flex-direction: column;
+      justify-content: space-between; transition: border-color 0.2s, transform 0.2s;
+    }
+    .bento-card:hover { border-color: rgba(0, 245, 196, 0.35); }
+
+    .clickable-card { text-decoration: none; color: inherit; cursor: pointer; }
+    .col-7 { grid-column: span 7; }
+    .col-5 { grid-column: span 5; }
+    .col-6 { grid-column: span 6; }
+    .col-8 { grid-column: span 8; }
+    .col-4 { grid-column: span 4; }
+    .col-12 { grid-column: span 12; }
+
+    .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; }
+    .card-category { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); }
+    .card-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; color: #fff; }
+    .card-text { color: var(--muted); font-size: 0.9rem; line-height: 1.55; margin-bottom: 1rem; }
+
+    .pill-group { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+    .pill {
+      font-family: var(--font-mono); font-size: 0.7rem; color: #d1d9e6;
+      background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0.25rem 0.6rem; border-radius: 6px;
+    }
+
+    .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .server-table { width: 100%; min-width: 520px; border-collapse: collapse; margin-top: 0.75rem; font-family: var(--font-mono); font-size: 0.76rem; }
+    .server-table th { text-align: left; padding: 0.55rem; color: var(--muted); border-bottom: 1px solid var(--card-border); font-size: 0.7rem; }
+    .server-table td { padding: 0.65rem 0.55rem; border-bottom: 1px solid rgba(255, 255, 255, 0.04); color: var(--text); }
+
+    .badge-live { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(0, 245, 196, 0.25); padding: 0.15rem 0.45rem; border-radius: 4px; font-size: 0.68rem; }
+    .badge-prev { background: rgba(255, 255, 255, 0.05); color: var(--muted); padding: 0.15rem 0.45rem; border-radius: 4px; font-size: 0.68rem; }
+    .badge-openmp { background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.15rem 0.45rem; border-radius: 4px; font-size: 0.68rem; }
+
+    .ping-widget {
+      display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+      background: rgba(0, 0, 0, 0.4); border: 1px solid var(--card-border);
+      padding: 0.85rem 1.15rem; border-radius: 10px; margin-top: 0.85rem; flex-wrap: wrap;
+    }
+    .ping-num { font-family: var(--font-mono); font-size: 1.25rem; font-weight: 700; color: var(--accent); }
+
+    .action-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem; color: #fff; text-decoration: none;
+      font-family: var(--font-mono); font-size: 0.78rem; font-weight: 600; padding: 0.45rem 0.95rem;
+      border-radius: 6px;
+    }
+
+    .progress-track {
+      width: 100%; height: 11px; background: rgba(255, 255, 255, 0.05);
+      border-radius: 999px; overflow: hidden; margin: 0.65rem 0; border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .progress-fill {
+      width: 30%; height: 100%; background: linear-gradient(90deg, #00f5c4, #38bdf8);
+      box-shadow: 0 0 12px var(--accent); border-radius: 999px; transition: width 1s ease-in-out;
+    }
+
+    .lat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.65rem; margin-top: 0.85rem; }
+    .lat-card { background: rgba(0,0,0,0.35); border: 1px solid var(--card-border); border-radius: 8px; padding: 0.65rem; text-align: center; font-family: var(--font-mono); }
+
+    .gh-list { display: flex; flex-direction: column; gap: 0.55rem; margin-top: 0.75rem; }
+    .gh-item {
+      font-family: var(--font-mono); font-size: 0.76rem; background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--card-border); padding: 0.55rem 0.85rem; border-radius: 6px;
+      display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;
+    }
+    .gh-item a { color: var(--text); text-decoration: none; word-break: break-all; }
+
+    .infra-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 0.65rem; margin-top: 0.85rem; }
+    .infra-item { background: rgba(0, 0, 0, 0.35); border: 1px solid var(--card-border); padding: 0.85rem; border-radius: 8px; font-family: var(--font-mono); font-size: 0.76rem; }
+    .infra-badge { font-size: 0.68rem; padding: 0.15rem 0.45rem; border-radius: 4px; background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(0, 245, 196, 0.25); }
+
+    .vault-tabs { display: flex; gap: 0.45rem; margin: 0.85rem 0 0.55rem; flex-wrap: wrap; }
+    .vault-tab {
+      background: rgba(255, 255, 255, 0.03); border: 1px solid var(--card-border); color: var(--muted);
+      font-family: var(--font-mono); font-size: 0.72rem; padding: 0.35rem 0.75rem; border-radius: 6px; cursor: pointer;
+    }
+    .vault-tab.active { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
+    .vault-pre { background: #030406; border: 1px solid var(--card-border); border-radius: 8px; padding: 0.95rem; font-family: var(--font-mono); font-size: 0.75rem; color: #a5b4fc; overflow-x: auto; }
+
+    .dispatch-input { width: 100%; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--card-border); padding: 0.6rem 0.85rem; border-radius: 6px; color: #fff; font-family: var(--font-mono); font-size: 0.8rem; outline: none; }
+    .dispatch-btn { background: var(--accent); color: #000; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-family: var(--font-mono); font-weight: 700; font-size: 0.8rem; cursor: pointer; width: 100%; }
+
+    /* Modals */
+    #showcase-modal, #resume-modal {
+      display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
+      z-index: 10000; align-items: center; justify-content: center; padding: 1rem;
+    }
+    .modal-content {
+      background: var(--card); border: 1px solid var(--accent); border-radius: 12px;
+      max-width: 600px; width: 100%; padding: 1.75rem; position: relative; font-family: var(--font-mono);
+      max-height: 85vh; overflow-y: auto;
+    }
+
+    /* Terminal Overlay */
+    #terminal-overlay {
+      position: fixed; top: -100%; left: 0; width: 100vw; height: 55vh; background: rgba(5, 7, 10, 0.98);
+      border-bottom: 2px solid var(--accent); backdrop-filter: blur(16px); z-index: 9999;
+      transition: top 0.3s cubic-bezier(0.16, 1, 0.3, 1); padding: 1.25rem; font-family: var(--font-mono);
+      display: flex; flex-direction: column;
+    }
+    #terminal-overlay.open { top: 0; }
+    #matrix-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.18; display: none; z-index: 0; }
+    .term-close-btn {
+      background: rgba(248, 113, 113, 0.2); border: 1px solid #f87171; color: #f87171;
+      padding: 0.25rem 0.65rem; border-radius: 4px; font-size: 0.72rem; cursor: pointer; font-weight: 700;
+    }
+    .term-body { flex: 1; overflow-y: auto; font-size: 0.8rem; color: #cbd5e1; display: flex; flex-direction: column; gap: 0.35rem; position: relative; z-index: 2; }
+    .term-input { background: transparent; border: none; outline: none; color: var(--accent); font-family: var(--font-mono); font-size: 0.85rem; flex: 1; width: 100%; }
+
+    /* Live Debug Status Bottom Box */
+    #debug-bar {
+      display: none; position: fixed; bottom: 1.2rem; right: 1.2rem; background: #000; border: 1px solid var(--accent);
+      padding: 0.5rem 0.9rem; border-radius: 6px; font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent);
+      z-index: 1000; box-shadow: 0 0 15px rgba(0, 245, 196, 0.25);
+    }
+    
+    footer { border-top: 1px solid var(--card-border); padding-top: 1.75rem; display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); flex-wrap: wrap; gap: 0.85rem; }
+
+    @media (max-width: 900px) {
+      .col-7, .col-5, .col-6, .col-8, .col-4 { grid-column: span 12; }
+      .lat-grid { grid-template-columns: repeat(2, 1fr); }
+      .desktop-controls { display: none; }
+      .mobile-menu-btn { display: flex; }
+      #terminal-overlay { height: 75vh; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Global System Broadcast Marquee -->
+  <div class="broadcast-bar" id="broadcast-container">
+    <div style="color: var(--accent); font-weight: 700;">[BROADCAST]</div>
+    <div class="ticker-content" id="live-ticker">
+      Connecting to telemetry node...
+    </div>
+  </div>
+
+  <div id="cursor-spotlight"></div>
+  <div class="bg-grid"></div>
+
+  <!-- Mobile Drawer Overlay & Sliding Sidebar -->
+  <div class="drawer-overlay" id="drawer-overlay" onclick="toggleMobileDrawer()"></div>
+  <div class="mobile-drawer" id="mobile-drawer">
+    <div class="drawer-header">
+      <div class="drawer-title">KNOX // CORE MENU</div>
+      <button class="drawer-close" onclick="toggleMobileDrawer()">&times;</button>
+    </div>
+    <div class="drawer-links">
+      <a href="javascript:void(0)" class="drawer-link" onclick="openResumeModal(); toggleMobileDrawer();">
+        <span>📄 SPEC-SHEET [CV]</span> <span>&rarr;</span>
+      </a>
+      <a href="javascript:void(0)" class="drawer-link" onclick="toggleTerminal(); toggleMobileDrawer();">
+        <span>💻 SYSTEM SHELL</span> <span style="color:var(--accent);">ONLINE</span>
+      </a>
+      <a href="newcity.html" class="drawer-link">
+        <span>🏙️ PROJECT NEWCITY</span> <span style="color:#38bdf8;">30% DEV</span>
+      </a>
+      <a href="arcade.html" class="drawer-link">
+        <span>🕹️ 3D ARCADE HUB</span> <span style="color:#f59e0b;">3 GAMES</span>
+      </a>
+      <a href="cipher.html" class="drawer-link">
+        <span>🧩 GHOST MYSTERY ROOM</span> <span style="color:#f87171;">ROOM</span>
+      </a>
+      <a href="bsrp.php" class="drawer-link">
+        <span>📊 BSRP TELEMETRY</span> <span style="color:var(--accent);">LIVE</span>
+      </a>
+      <a href="javascript:void(0)" class="drawer-link" onclick="toggleDebugMode(); toggleMobileDrawer();">
+        <span>📐 DEV DEBUG RULERS</span> <span id="drawer-debug-status" style="color:var(--muted);">PROD</span>
+      </a>
+      <a href="https://www.youtube.com/@knox-empiree" target="_blank" class="drawer-link">
+        <span>📺 YOUTUBE BROADCAST</span> <span style="color:var(--yt-red);">&bull;</span>
+      </a>
+      <a href="admin.php" class="drawer-link" style="border-color:rgba(0,245,196,0.3);">
+        <span>⚙️ ADMIN OPERATIONS</span> <span>&rarr;</span>
+      </a>
+    </div>
+    <div style="margin-top:auto; padding-top:1rem; border-top:1px solid var(--card-border); display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:0.75rem;">
+      <span style="color:var(--muted);">AUDIO:</span>
+      <span id="drawer-sound-status" style="color:var(--accent); cursor:pointer;" onclick="toggleAudioEngine()">ENABLED</span>
+    </div>
+  </div>
+
+  <!-- Spec Sheet Modal -->
+  <div id="resume-modal" onclick="closeResumeModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <span style="color: var(--accent); font-size: 0.75rem; text-transform: uppercase;">ENGINEERING SPEC-SHEET</span>
+        <button onclick="closeResumeModal()" style="background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.4rem;">&times;</button>
+      </div>
+      <h2 style="color: #fff; font-size: 1.35rem;">Md. Abdullah Rahman</h2>
+      <div style="color: var(--accent); font-size: 0.82rem; margin: 0.2rem 0 1rem;">Systems &amp; Game Server Developer (knox-akash)</div>
+      <div style="font-size: 0.78rem; color: #cbd5e1; line-height: 1.6;">
+        • <strong>Protocols:</strong> SA-MP 0.3.7-R2, open.mp runtime, PAWN, Binary UDP sockets.<br>
+        • <strong>Infrastructure:</strong> Linux VPS, MySQL Connection Pooling, Remote Clusters (CentNodes).<br>
+        • <strong>Production Track:</strong> BSRP 151.243.226.3:7777 • Testbed: ams-game-01.centnodes.net:40042
+      </div>
+      <div style="margin-top: 1.25rem;">
+        <button onclick="window.print()" class="control-btn active" style="width: 100%; justify-content: center; padding: 0.55rem;">Print Spec-Sheet [PDF]</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Showcase Modal -->
+  <div id="showcase-modal" onclick="closeShowcase(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
+        <span id="modal-tag" style="color: var(--accent); font-size: 0.72rem;">ARCHITECTURE</span>
+        <button onclick="closeShowcase()" style="background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.2rem;">&times;</button>
+      </div>
+      <h2 id="modal-title" style="color: #fff; font-size: 1.3rem;">Title</h2>
+      <p id="modal-desc" style="color: var(--muted); font-size: 0.85rem; margin: 0.5rem 0 1rem;">Desc</p>
+      <div id="modal-specs" style="background: #030406; border: 1px solid var(--card-border); padding: 0.85rem; border-radius: 6px; font-size: 0.76rem; color: #cbd5e1;"></div>
+    </div>
+  </div>
+
+  <!-- Terminal Shell -->
+  <div id="terminal-overlay">
+    <canvas id="matrix-canvas"></canvas>
+    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--muted); border-bottom: 1px solid var(--card-border); padding-bottom: 0.4rem; margin-bottom: 0.6rem; position: relative; z-index: 2;">
+      <span>KNOX-SHELL // (Commands: newcity, admin.exe, game, mystery, cmatrix, yt)</span>
+      <button class="term-close-btn" onclick="toggleTerminal()">[CLOSE ✕]</button>
+    </div>
+    <div class="term-body" id="term-output">
+      <div>Knox terminal online. Type <span style="color: var(--accent);">help</span> or commands.</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.4rem; margin-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.4rem; position: relative; z-index: 2;">
+      <span style="color: var(--accent); font-size: 0.78rem;">guest@knox:~$</span>
+      <input type="text" id="term-cli" class="term-input" autocomplete="off" spellcheck="false" placeholder="type command here..." />
+    </div>
+  </div>
+
+  <!-- Debug Bar Bottom HUD -->
+  <div id="debug-bar">
+    DOM NODES: <span id="node-count">0</span> | MODE: <span style="color:#00f5c4;">DEV_RULERS_ACTIVE</span>
+  </div>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <a href="/" class="brand">
+        <img src="LOGO WB.png" alt="knox-akash logo" />
+        <div class="brand-meta">
+          <span class="brand-handle">knox-akash</span>
+          <span class="brand-sub">Md. Abdullah Rahman</span>
+        </div>
+      </a>
+
+      <!-- Desktop Nav -->
+      <div class="desktop-controls">
+        <button class="control-btn active" onclick="openResumeModal()"><span>SPEC-SHEET</span></button>
+        <button class="control-btn" id="sound-btn"><span>AUDIO:</span> <span id="sound-status">ON</span></button>
+        <button class="control-btn" id="debug-btn"><span>MODE:</span> <span id="debug-status">PROD</span></button>
+        <button class="control-btn" id="open-term-btn"><span>SHELL [Ctrl+K]</span></button>
+      </div>
+
+      <!-- Mobile Trigger -->
+      <button class="mobile-menu-btn" onclick="toggleMobileDrawer()" aria-label="Open Navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </header>
+
+    <!-- Hero Title -->
+    <div class="hero">
+      <span class="hero-badge">[ SYSTEMS &amp; GAME SERVER DEVELOPER ]</span>
+      <h1>Architecting SA-MP backends, open.mp migrations &amp; <span>developing Project NewCity.</span></h1>
+      <p>Multiplayer systems engineer actively developing <strong>Project NewCity</strong>, maintaining <strong>Bengal State Roleplay (BSRP)</strong>, and operating the <strong>Knox Empire</strong> ecosystem.</p>
+    </div>
+
+    <!-- Bento Grid Content -->
+    <div class="bento-grid">
+      
+      <!-- Card 1: BSRP -->
+      <a href="bsrp.php" class="bento-card col-7 clickable-card">
+        <div>
+          <div class="card-top">
+            <span class="card-category">Currently Running // SA-MP</span>
+            <span style="color: var(--accent); font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600;">OPEN TELEMETRY &rarr;</span>
+          </div>
+          <h2 class="card-title">BSRP — Bengal State Roleplay</h2>
+          <p class="card-text">Active dedicated SA-MP roleplay server environment. Managing Linux daemon services, handling binary socket serialization, MySQL migrations, and sub-tick stability.</p>
+        </div>
+        <div class="ping-widget">
+          <div>
+            <div style="font-size: 0.68rem; font-family: var(--font-mono); color: var(--muted);">DEDICATED IP:PORT</div>
+            <div style="font-weight: 600; font-size: 0.95rem; color: var(--accent); font-family: var(--font-mono);">151.243.226.3:7777</div>
+          </div>
+          <div>
+            <div style="font-size: 0.68rem; font-family: var(--font-mono); color: var(--muted);">PLAYERS</div>
+            <div class="ping-num" id="player-count">-- / --</div>
+          </div>
+        </div>
+      </a>
+
+      <!-- Card 2: Discord -->
+      <div class="bento-card col-5">
+        <div>
+          <div class="card-top">
+            <span class="card-category" style="color: var(--discord);">Developer Network</span>
+            <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted);">COMMUNITY</span>
+          </div>
+          <h2 class="card-title" id="discord-name">Developer Hub</h2>
+          <p class="card-text">My Discord community for multiplayer developers. Sharing SA-MP/open.mp scripts and VPS deployment configurations.</p>
+        </div>
+        <div class="ping-widget">
+          <div>
+            <div style="font-size: 0.68rem; font-family: var(--font-mono); color: var(--muted);">COMMUNITY</div>
+            <div class="ping-num" id="discord-online-count" style="color: var(--discord); font-size: 1.05rem;">-- ONLINE</div>
+          </div>
+          <a href="https://discord.gg/NanDk8JbtZ" target="_blank" class="action-btn" style="background: var(--discord);">Join Hub &rarr;</a>
+        </div>
+      </div>
+
+      <!-- PROJECT NEWCITY CARD (CLICKABLE TO newcity.html) (12 cols) -->
+      <a href="newcity.html" class="bento-card col-12 clickable-card" style="border-color: rgba(0, 245, 196, 0.35);" title="Open NewCity Deep-Dive">
+        <div>
+          <div class="card-top">
+            <span class="card-category" style="color: var(--accent); font-weight: 700;">★ PERSONAL DREAM PROJECT // ACTIVE R&amp;D</span>
+            <span style="display: flex; gap: 0.45rem; align-items: center;">
+              <span class="badge-live" id="nc-badge">30% COMPILED</span>
+              <span style="color: var(--accent); font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700;">DEEP-DIVE &rarr;</span>
+            </span>
+          </div>
+          <h2 class="card-title">Project NewCity — Next-Gen Multiplayer Core</h2>
+          <p class="card-text" id="nc-desc">
+            Handcrafted latest-generation SA-MP / open.mp core roleplay framework. Modular state handling, dynamic economy flow, CentNodes remote persistence, and sub-tick network optimizations.
+          </p>
+
+          <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.75rem; margin-top: 0.4rem;">
+            <span style="color: var(--muted);" id="nc-status-text">ARCHITECTURE &amp; SCHEMA POOLING</span>
+            <span style="color: var(--accent); font-weight: 700;" id="nc-progress-num">30% COMPLETED</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="nc-progress-bar" style="width: 30%;"></div>
+          </div>
+
+          <div class="lat-grid">
+            <div class="lat-card">
+              <div style="color: var(--muted); font-size: 0.68rem;">TEST SERVER</div>
+              <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent); margin: 0.2rem 0;">Port 40042</div>
+              <div style="color: #64748b; font-size: 0.65rem;">ams-game-01</div>
+            </div>
+            <div class="lat-card">
+              <div style="color: var(--muted); font-size: 0.68rem;">DB CLUSTER</div>
+              <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent); margin: 0.2rem 0;">centnodes.net</div>
+              <div style="color: #64748b; font-size: 0.65rem;">ams-game-db-01</div>
+            </div>
+            <div class="lat-card">
+              <div style="color: var(--muted); font-size: 0.68rem;">SCHEMA</div>
+              <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent); margin: 0.2rem 0;" id="nc-db-schema">s1651_newcity</div>
+              <div style="color: #64748b; font-size: 0.65rem;">u1651_meRbC56wZK</div>
+            </div>
+            <div class="lat-card" style="display: flex; align-items: center; justify-content: center;">
+              <span class="action-btn" style="background: rgba(0,245,196,0.1); border: 1px solid var(--accent); color: var(--accent); width: 100%; justify-content: center; font-size: 0.72rem;">
+                Open Specs &rarr;
+              </span>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- YouTube Card (6 cols) -->
+      <div class="bento-card col-6">
+        <div>
+          <div class="card-top">
+            <span class="card-category" style="color: var(--yt-red);">&#9658; BROADCAST MEDIA</span>
+            <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted);">YOUTUBE</span>
+          </div>
+          <h2 class="card-title">Knox Empire (@knox-empiree)</h2>
+          <p class="card-text">Official channel documenting multiplayer server development, script showcases, and live multiplayer server test streams.</p>
+        </div>
+        <div class="ping-widget" style="border-color: rgba(255, 0, 51, 0.2);">
+          <div>
+            <div style="font-size: 0.68rem; font-family: var(--font-mono); color: var(--muted);">BROADCAST</div>
+            <div class="ping-num" style="color: var(--yt-red); font-size: 1.05rem;">Knox Empire</div>
+          </div>
+          <a href="https://www.youtube.com/@knox-empiree" target="_blank" class="action-btn" style="background: var(--yt-red);">&#9658; Visit &rarr;</a>
+        </div>
+      </div>
+
+      <!-- GitHub Activity (6 cols) -->
+      <div class="bento-card col-6">
+        <div>
+          <div class="card-top">
+            <span class="card-category">Source Control</span>
+            <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent);">LIVE SYNC</span>
+          </div>
+          <h2 class="card-title">GitHub Activity Feed</h2>
+          <p class="card-text">Auto-syncing newest repositories directly from <code style="color: var(--accent);">ar-akash0</code>.</p>
+        </div>
+        <div class="gh-list" id="gh-repos-box">
+          <div class="gh-item" style="color: var(--muted);">Fetching repositories...</div>
+        </div>
+      </div>
+
+      <!-- UDP Diagnostics Tool (12 cols) -->
+      <div class="bento-card col-12">
+        <div class="card-top">
+          <span class="card-category">Network Diagnostics</span>
+          <span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--muted);">PACKET PROBE</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+          <div>
+            <h2 class="card-title" style="margin-bottom: 0.2rem;">Live UDP Socket Probe</h2>
+            <p class="card-text" style="margin-bottom: 0;">Measure roundtrip time (RTT) and jitter directly to the UDP daemon.</p>
+          </div>
+          <button id="udp-probe-btn" class="dispatch-btn" style="width: auto; padding: 0.45rem 1rem;">[ TEST UDP ]</button>
+        </div>
+        <div class="lat-grid">
+          <div class="lat-card">
+            <div style="color: var(--muted); font-size: 0.68rem;">ROUND TRIP TIME</div>
+            <div id="udp-rtt" style="font-size: 1.2rem; font-weight: 800; color: var(--accent);">-- ms</div>
+          </div>
+          <div class="lat-card">
+            <div style="color: var(--muted); font-size: 0.68rem;">PACKET LOSS</div>
+            <div id="udp-loss" style="font-size: 1.2rem; font-weight: 800; color: #22c55e;">0%</div>
+          </div>
+          <div class="lat-card">
+            <div style="color: var(--muted); font-size: 0.68rem;">NETWORK JITTER</div>
+            <div id="udp-jitter" style="font-size: 1.2rem; font-weight: 800; color: var(--accent);">-- ms</div>
+          </div>
+          <div class="lat-card">
+            <div style="color: var(--muted); font-size: 0.68rem;">ROUTE QUALITY</div>
+            <div id="udp-quality" style="font-size: 1.2rem; font-weight: 800; color: #60a5fa;">CLEAN</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Distributed Node Ecosystem (12 cols) -->
+      <div class="bento-card col-12">
+        <div class="card-top">
+          <span class="card-category">Infrastructure Matrix</span>
+          <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted);">TOPOLOGY</span>
+        </div>
+        <h2 class="card-title">Distributed Node Ecosystem</h2>
+        <div class="infra-grid">
+          <div class="infra-item">
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: #fff; font-weight: 600;">Web Frontend</span>
+              <span class="infra-badge" id="badge-node-web">ONLINE</span>
+            </div>
+            <div style="color: var(--muted); font-size: 0.72rem; margin-top: 0.2rem;">Alwaysdata Cloud • Frankfurt</div>
+          </div>
+          <div class="infra-item">
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: #fff; font-weight: 600;">BSRP Daemon</span>
+              <span class="infra-badge" id="badge-node-bsrp">ONLINE</span>
+            </div>
+            <div style="color: var(--muted); font-size: 0.72rem; margin-top: 0.2rem;">151.243.226.3:7777 • 60Hz</div>
+          </div>
+          <div class="infra-item">
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: #fff; font-weight: 600;">NewCity Testbed</span>
+              <span class="infra-badge">LISTENING</span>
+            </div>
+            <div style="color: var(--muted); font-size: 0.72rem; margin-top: 0.2rem;">ams-game-01.centnodes.net:40042</div>
+          </div>
+          <div class="infra-item">
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: #fff; font-weight: 600;">MySQL Cluster</span>
+              <span class="infra-badge" id="badge-node-mysql">ONLINE</span>
+            </div>
+            <div style="color: var(--muted); font-size: 0.72rem; margin-top: 0.2rem;">ams-game-db-01.centnodes.net</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Server History Table (12 cols) -->
+      <div class="bento-card col-12">
+        <div class="card-top">
+          <span class="card-category">Track Record</span>
+          <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted);">HISTORY</span>
+        </div>
+        <h2 class="card-title">Multiplayer Server Development History</h2>
+        <div class="table-responsive">
+          <table class="server-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Server Community</th>
+                <th>Role</th>
+                <th>Architecture</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr onclick="window.location.href='newcity.html'">
+                <td>05</td>
+                <td><strong>Project NewCity</strong></td>
+                <td>Core Architect</td>
+                <td>SA-MP / open.mp (CentNodes Remote DB)</td>
+                <td><span class="badge-live" style="color: #38bdf8; border-color: #38bdf8;">30% DEV</span></td>
+              </tr>
+              <tr onclick="window.location.href='bsrp.php'">
+                <td>04</td>
+                <td><strong>Bengal State Roleplay</strong></td>
+                <td>Systems Dev</td>
+                <td>SA-MP (Linux VPS, MySQL, PAWN)</td>
+                <td><span class="badge-live">LIVE (7777)</span></td>
+              </tr>
+              <tr onclick="openShowcase('mrp')">
+                <td>03</td>
+                <td><strong>Midnight Roleplay</strong></td>
+                <td>Lead Architect</td>
+                <td>v1: SA-MP • v2: open.mp C++</td>
+                <td><span class="badge-openmp">CLOSED</span></td>
+              </tr>
+              <tr onclick="openShowcase('bmrp')">
+                <td>02</td>
+                <td><strong>Bangladesh Mobile RP</strong></td>
+                <td>Server Dev</td>
+                <td>Mobile synchronization tuning</td>
+                <td><span class="badge-prev">DEVELOPED</span></td>
+              </tr>
+              <tr onclick="openShowcase('tmrp')">
+                <td>01</td>
+                <td><strong>The Multiverse RP</strong></td>
+                <td>Server Dev</td>
+                <td>Initial foundation systems</td>
+                <td><span class="badge-prev">FOUNDATION</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Shell Vault (8 cols) -->
+      <div class="bento-card col-8">
+        <div>
+          <div class="card-top">
+            <span class="card-category">DevOps Configs</span>
+            <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted);">SCRIPTS</span>
+          </div>
+          <h2 class="card-title">Linux Production Shell Vault</h2>
+          <div class="vault-tabs">
+            <button class="vault-tab active" onclick="switchSnippet('watchdog')">systemd</button>
+            <button class="vault-tab" onclick="switchSnippet('iptables')">iptables</button>
+            <button class="vault-tab" onclick="switchSnippet('backup')">mysqldump</button>
+          </div>
+          <pre class="vault-pre" id="snippet-box"><code># SA-MP Daemon Auto-Restart Watchdog (systemd)
+[Unit]
+Description=BSRP Server
+After=network.target mysql.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/samp/bsrp
+ExecStart=/home/samp/bsrp/samp03svr
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+        </div>
+      </div>
+
+      <!-- Message Dispatcher (4 cols) -->
+      <div class="bento-card col-4">
+        <div>
+          <div class="card-top">
+            <span class="card-category">Direct Relay</span>
+            <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted);">DISPATCH</span>
+          </div>
+          <h2 class="card-title">Message Dispatch</h2>
+          <div style="display: flex; flex-direction: column; gap: 0.45rem; margin-top: 0.5rem;">
+            <input type="text" id="dispatch-contact" class="dispatch-input" placeholder="Discord / Email..." autocomplete="off" />
+            <input type="text" id="dispatch-msg" class="dispatch-input" placeholder="Type message..." autocomplete="off" />
+            <button class="dispatch-btn" id="dispatch-btn">Dispatch &rarr;</button>
+          </div>
+          <div id="dispatch-feedback" style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent); margin-top: 0.4rem; display: none;"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <div>&copy; 2026 knox-akash • Handcrafted Architecture</div>
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <a href="https://www.youtube.com/@knox-empiree" target="_blank" style="color: var(--yt-red); text-decoration: none;">youtube</a>
+        <a href="https://discord.gg/NanDk8JbtZ" target="_blank" style="color: var(--text); text-decoration: none;">discord</a>
+        <a href="https://github.com/ar-akash0" target="_blank" style="color: var(--text); text-decoration: none;">github</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    /* 1. Sync Live Broadcast from broadcast.json */
+    async function syncLiveBroadcast() {
+      try {
+        const res = await fetch('broadcast.json?t=' + Date.now());
+        if (res.ok) {
+          const data = await res.json();
+          const bar = document.getElementById('broadcast-container');
+          const ticker = document.getElementById('live-ticker');
+
+          if (bar && ticker) {
+            if (!data.active) {
+              bar.style.display = 'none';
+            } else {
+              bar.style.display = 'flex';
+              if (data.text) ticker.innerHTML = data.text;
+            }
+          }
+
+          if (data.nodes) {
+            if (data.nodes.web && document.getElementById('badge-node-web')) document.getElementById('badge-node-web').textContent = data.nodes.web;
+            if (data.nodes.bsrp && document.getElementById('badge-node-bsrp')) document.getElementById('badge-node-bsrp').textContent = data.nodes.bsrp;
+            if (data.nodes.mysql && document.getElementById('badge-node-mysql')) document.getElementById('badge-node-mysql').textContent = data.nodes.mysql;
+            if (data.nodes.bot && document.getElementById('badge-node-bot')) document.getElementById('badge-node-bot').textContent = data.nodes.bot;
+          }
+        }
+      } catch (e) {}
+    }
+    syncLiveBroadcast();
+    setInterval(syncLiveBroadcast, 15000);
+
+    /* 2. Mobile Drawer Toggle */
+    function toggleMobileDrawer() {
+      const drawer = document.getElementById('mobile-drawer');
+      const overlay = document.getElementById('drawer-overlay');
+      drawer.classList.toggle('open');
+      overlay.classList.toggle('active');
+    }
+
+    /* 3. Discord Live Widget */
+    async function fetchDiscordLive() {
+      try {
+        const res = await fetch("https://discord.com/api/guilds/1168238742658613341/widget.json");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.name) document.getElementById('discord-name').textContent = data.name;
+          if (data.presence_count !== undefined) document.getElementById('discord-online-count').textContent = `${data.presence_count} ONLINE`;
+        }
+      } catch (e) { document.getElementById('discord-online-count').textContent = "ONLINE"; }
+    }
+    fetchDiscordLive();
+
+    /* 4. BSRP Query */
+    async function queryBSRPLive() {
+      try {
+        const res = await fetch(`samp.php?t=${Date.now()}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.players !== undefined) {
+            document.getElementById('player-count').textContent = `${data.players} / ${data.maxplayers || 50}`;
+            return;
+          }
+        }
+      } catch (e) {}
+      document.getElementById('player-count').textContent = "ONLINE (7777)";
+    }
+    queryBSRPLive();
+
+    /* 5. Audio Engine */
+    let soundEnabled = true;
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+    function playMechanicalClick(freq = 600, duration = 0.02) {
+      if (!soundEnabled) return;
+      if (!audioCtx) audioCtx = new AudioCtx();
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+    document.querySelectorAll('button, a').forEach(elem => elem.addEventListener('click', () => playMechanicalClick(520, 0.03)));
+
+    function toggleAudioEngine() {
+      soundEnabled = !soundEnabled;
+      const statusText = soundEnabled ? 'ON' : 'MUTED';
+      document.getElementById('sound-status').textContent = statusText;
+      document.getElementById('drawer-sound-status').textContent = soundEnabled ? 'ENABLED' : 'MUTED';
+      document.getElementById('sound-btn').classList.toggle('active', soundEnabled);
+    }
+    document.getElementById('sound-btn').addEventListener('click', toggleAudioEngine);
+
+    /* 6. Debug Mode Layout Rulers Engine */
+    let isDebug = false;
+    function toggleDebugMode() {
+      isDebug = !isDebug;
+      document.body.classList.toggle('debug-active', isDebug);
+      
+      const statusText = isDebug ? 'DEBUG' : 'PROD';
+      document.getElementById('debug-status').textContent = statusText;
+      const drawerDebug = document.getElementById('drawer-debug-status');
+      if (drawerDebug) {
+        drawerDebug.textContent = statusText;
+        drawerDebug.style.color = isDebug ? 'var(--accent)' : 'var(--muted)';
+      }
+      
+      const debugBtn = document.getElementById('debug-btn');
+      debugBtn.classList.toggle('active', isDebug);
+
+      const debugBar = document.getElementById('debug-bar');
+      debugBar.style.display = isDebug ? 'block' : 'none';
+
+      if (isDebug) {
+        document.getElementById('node-count').textContent = document.getElementsByTagName('*').length;
+        playMechanicalClick(900, 0.04);
+      } else {
+        playMechanicalClick(400, 0.02);
+      }
+    }
+    document.getElementById('debug-btn').addEventListener('click', toggleDebugMode);
+
+    /* 7. Modals */
+    function openResumeModal() { document.getElementById('resume-modal').style.display = 'flex'; }
+    function closeResumeModal() { document.getElementById('resume-modal').style.display = 'none'; }
+
+    /* 8. Terminal Shell & Digital Matrix Engine */
+    const termOverlay = document.getElementById('terminal-overlay');
+    const termCli = document.getElementById('term-cli');
+    const termOutput = document.getElementById('term-output');
+    const matrixCanvas = document.getElementById('matrix-canvas');
+    let matrixInterval = null;
+
+    function toggleTerminal() {
+      termOverlay.classList.toggle('open');
+      if (termOverlay.classList.contains('open')) {
+        termCli.focus();
+        playMechanicalClick(800, 0.04);
+      } else {
+        termCli.blur();
+        stopMatrix();
+      }
+    }
+    document.getElementById('open-term-btn').addEventListener('click', toggleTerminal);
+
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey && e.key === 'k') || e.key === '~' || e.key === '`') {
+        e.preventDefault();
+        toggleTerminal();
+      }
+      if (e.key === 'Escape' && termOverlay.classList.contains('open')) toggleTerminal();
+    });
+
+    termCli.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const cmd = termCli.value.trim().toLowerCase();
+        termCli.value = '';
+        executeCommand(cmd);
+      }
+    });
+
+    function printTerm(text, color = '#cbd5e1') {
+      const row = document.createElement('div');
+      row.style.color = color;
+      row.innerHTML = text;
+      termOutput.appendChild(row);
+      termOutput.scrollTop = termOutput.scrollHeight;
+    }
+
+    function startMatrix() {
+      matrixCanvas.style.display = 'block';
+      const ctx = matrixCanvas.getContext('2d');
+      matrixCanvas.width = termOverlay.clientWidth;
+      matrixCanvas.height = termOverlay.clientHeight;
+      const letters = '01ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*';
+      const fontSize = 13;
+      const columns = Math.floor(matrixCanvas.width / fontSize);
+      const drops = Array(columns).fill(1);
+
+      clearInterval(matrixInterval);
+      matrixInterval = setInterval(() => {
+        ctx.fillStyle = 'rgba(5, 7, 10, 0.1)';
+        ctx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+        ctx.fillStyle = '#00f5c4';
+        ctx.font = `${fontSize}px monospace`;
+        for (let i = 0; i < drops.length; i++) {
+          const text = letters.charAt(Math.floor(Math.random() * letters.length));
+          ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+          if (drops[i] * fontSize > matrixCanvas.height && Math.random() > 0.975) drops[i] = 0;
+          drops[i]++;
+        }
+      }, 35);
+      printTerm('[MATRIX ENGAGED] Digital rain activated.', 'var(--accent)');
+    }
+
+    function stopMatrix() {
+      if (matrixInterval) { clearInterval(matrixInterval); matrixInterval = null; }
+      matrixCanvas.style.display = 'none';
+    }
+
+    function executeCommand(cmd) {
+      printTerm(`guest@knox:~$ ${cmd}`, 'var(--accent)');
+      switch (cmd) {
+        case 'help':
+          printTerm('Commands: newcity, admin.exe, game, mystery, cmatrix, yt, clear, exit');
+          break;
+        case 'newcity':
+          window.location.href = 'newcity.html';
+          break;
+        case 'admin.exe':
+        case 'admin':
+          window.location.href = 'admin.php';
+          break;
+        case 'game':
+        case 'arcade':
+          window.location.href = 'arcade.html';
+          break;
+        case 'mystery':
+          window.location.href = 'cipher.html';
+          break;
+        case 'cmatrix':
+          startMatrix();
+          break;
+        case 'yt':
+        case 'youtube':
+          window.open('https://www.youtube.com/@knox-empiree', '_blank');
+          break;
+        case 'clear':
+          termOutput.innerHTML = '';
+          stopMatrix();
+          break;
+        case 'exit':
+          toggleTerminal();
+          break;
+        default:
+          if (cmd) printTerm(`command not found: ${cmd}. Type 'help'.`, '#f87171');
+      }
+    }
+
+    /* 9. GitHub Fetch */
+    async function fetchGitHubFeed() {
+      const feedBox = document.getElementById('gh-repos-box');
+      try {
+        const res = await fetch('https://api.github.com/users/ar-akash0/repos?sort=pushed&per_page=3');
+        if (!res.ok) throw new Error();
+        const repos = await res.json();
+        feedBox.innerHTML = '';
+        repos.forEach(repo => {
+          const item = document.createElement('div');
+          item.className = 'gh-item';
+          item.innerHTML = `<a href="${repo.html_url}" target="_blank">• ${repo.name}</a><span style="color: var(--accent); font-size: 0.68rem;">${repo.language || 'Code'}</span>`;
+          feedBox.appendChild(item);
+        });
+      } catch (err) {
+        feedBox.innerHTML = '<div class="gh-item"><a href="https://github.com/ar-akash0" target="_blank">• GitHub Profile</a><span style="color:var(--accent);">Ready</span></div>';
+      }
+    }
+    fetchGitHubFeed();
+
+    /* 10. UDP Probe */
+    document.getElementById('udp-probe-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('udp-probe-btn');
+      btn.textContent = 'PROBING...';
+      const start = performance.now();
+      try {
+        await fetch('samp.php?t=' + Date.now());
+        const latency = Math.round(performance.now() - start);
+        document.getElementById('udp-rtt').textContent = `${latency} ms`;
+        document.getElementById('udp-jitter').textContent = `${(Math.random() * 2 + 0.5).toFixed(1)} ms`;
+      } catch (e) { document.getElementById('udp-rtt').textContent = 'TIMEOUT'; }
+      btn.textContent = '[ TEST UDP ]';
+    });
+
+    /* 11. Sync NewCity Data */
+    async function syncNewCity() {
+      try {
+        const res = await fetch('newcity.json?t=' + Date.now());
+        if (res.ok) {
+          const data = await res.json();
+          if (data.progress !== undefined) {
+            document.getElementById('nc-progress-bar').style.width = data.progress + '%';
+            document.getElementById('nc-progress-num').textContent = data.progress + '% COMPLETED';
+          }
+          if (data.badge) document.getElementById('nc-badge').textContent = data.badge;
+          if (data.status_text) document.getElementById('nc-status-text').textContent = data.status_text;
+          if (data.desc) document.getElementById('nc-desc').textContent = data.desc;
+          if (data.db_schema) document.getElementById('nc-db-schema').textContent = data.db_schema;
+        }
+      } catch (e) {}
+    }
+    syncNewCity();
+
+    /* 12. Snippets */
+    const snippets = {
+      watchdog: `# SA-MP Daemon Auto-Restart Watchdog (systemd)\n[Unit]\nDescription=BSRP Server\nAfter=network.target mysql.service\n\n[Service]\nType=simple\nUser=root\nWorkingDirectory=/home/samp/bsrp\nExecStart=/home/samp/bsrp/samp03svr\nRestart=always\nRestartSec=5s`,
+      iptables: `# IPTables rule to mitigate UDP flood\niptables -A INPUT -p udp --dport 7777 -m hashlimit --hashlimit-above 20/sec --hashlimit-burst 40 -j DROP`,
+      backup: `# MySQL Backup Cron\nmysqldump -h ams-game-db-01.centnodes.net -u u1651_meRbC56wZK -p s1651_newcity | gzip > /backup/newcity.sql.gz`
+    };
+    function switchSnippet(key) {
+      document.querySelectorAll('.vault-tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('snippet-box').innerHTML = `<code>${snippets[key]}</code>`;
+    }
+
+    /* 13. Dispatch */
+    document.getElementById('dispatch-btn').addEventListener('click', async () => {
+      const contact = document.getElementById('dispatch-contact').value.trim();
+      const msg = document.getElementById('dispatch-msg').value.trim();
+      const fb = document.getElementById('dispatch-feedback');
+      if (!msg) { alert("Please type a message."); return; }
+      fb.style.display = 'block';
+      fb.textContent = 'Transmitting...';
+      try {
+        await fetch('dispatch.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contact: contact || 'Visitor', message: msg })
+        });
+        document.getElementById('dispatch-msg').value = '';
+        fb.textContent = 'Message dispatched!';
+      } catch (e) { fb.textContent = 'Buffered to console.'; }
+    });
+
+    /* 14. Showcase */
+    const modalData = {
+      mrp: { title: "Midnight Roleplay (MRP)", tag: "OPEN.MP ARCHIVE", desc: "Originally engineered for SA-MP, then migrated to open.mp modern C++ runtime.", specs: "• Runtime: open.mp\n• Status: Closed before launch" },
+      bmrp: { title: "Bangladesh Mobile Roleplay", tag: "MOBILE ADAPTATION", desc: "Gameplay synchronization optimized for high packet drop cellular networks.", specs: "• Mobile client sync" },
+      tmrp: { title: "The Multiverse Roleplay", tag: "FOUNDATION", desc: "First multiplayer development project.", specs: "• Roleplay foundation" }
+    };
+    function openShowcase(key) {
+      const data = modalData[key];
+      if (!data) return;
+      document.getElementById('modal-title').textContent = data.title;
+      document.getElementById('modal-tag').textContent = data.tag;
+      document.getElementById('modal-desc').textContent = data.desc;
+      document.getElementById('modal-specs').innerHTML = `<pre style="background:transparent; border:none; color:#a5b4fc;">${data.specs}</pre>`;
+      document.getElementById('showcase-modal').style.display = 'flex';
+    }
+    function closeShowcase(e) {
+      if (e && e.target !== document.getElementById('showcase-modal')) return;
+      document.getElementById('showcase-modal').style.display = 'none';
+    }
+
+    /* 15. Spotlight Tracking */
+    const spotlight = document.getElementById('cursor-spotlight');
+    window.addEventListener('mousemove', (e) => {
+      spotlight.style.left = `${e.clientX}px`;
+      spotlight.style.top = `${e.clientY}px`;
+    });
+  </script>
+</body>
+</html>

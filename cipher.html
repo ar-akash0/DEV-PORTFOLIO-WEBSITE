@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KNOX // Operation: Ghost Node</title>
+  <link rel="icon" type="image/png" href="LOGO WB.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #030508;
+      --panel: #070b12;
+      --border: rgba(0, 245, 196, 0.2);
+      --accent: #00f5c4;
+      --danger: #f87171;
+      --warn: #fbbf24;
+      --text: #cbd5e1;
+      --muted: #64748b;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-mono); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    
+    header { height: 50px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 1.5rem; background: rgba(3,5,8,0.9); }
+    .nav-btn { color: var(--muted); text-decoration: none; font-size: 0.75rem; border: 1px solid var(--border); padding: 0.3rem 0.6rem; border-radius: 4px; transition: 0.2s; }
+    .nav-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+    .main-grid { flex: 1; display: grid; grid-template-columns: 1.4fr 1fr; gap: 1px; background: var(--border); overflow: hidden; }
+    .panel { background: var(--panel); display: flex; flex-direction: column; overflow: hidden; }
+
+    .panel-header { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.75rem; font-weight: 700; color: var(--accent); display: flex; justify-content: space-between; background: rgba(0,0,0,0.3); }
+
+    /* Left Console */
+    .console-body { flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.45rem; font-size: 0.8rem; line-height: 1.5; }
+    .console-input-row { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; border-top: 1px solid var(--border); background: #020305; }
+    .console-input { flex: 1; background: transparent; border: none; outline: none; color: var(--accent); font-family: var(--font-mono); font-size: 0.85rem; }
+
+    /* Right Intel Desk */
+    .intel-body { flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; }
+    .intel-card { background: #020408; border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 0.85rem; }
+    .intel-title { font-size: 0.72rem; color: var(--warn); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    .hex-dump { font-size: 0.7rem; color: #475569; word-break: break-all; line-height: 1.4; user-select: none; }
+    .evidence-item { display: flex; justify-content: space-between; font-size: 0.75rem; padding: 0.4rem 0; border-bottom: 1px dashed rgba(255,255,255,0.05); }
+
+    @media (max-width: 850px) {
+      .main-grid { grid-template-columns: 1fr; grid-template-rows: 1.2fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div style="font-size: 0.85rem; font-weight: 700; color: var(--accent);">OPERATION: GHOST NODE // CRIME SECTOR /opt/ghost</div>
+    <div>
+      <a href="index.html" class="nav-btn">&larr; Return to Telemetry</a>
+    </div>
+  </header>
+
+  <div class="main-grid">
+    <!-- Panel 1: Forensic Shell -->
+    <div class="panel">
+      <div class="panel-header">
+        <span>INTERACTIVE INVESTIGATION SHELL</span>
+        <span style="color: var(--danger);">&#x25CF; SYSTEM BREACH ACTIVE</span>
+      </div>
+      <div class="console-body" id="term-log">
+        <div style="color: var(--danger);">[WARNING] Unauthorized root-level daemon detected intercepting system sockets.</div>
+        <div style="color: var(--muted);">Identity of the Ghost Operator is unknown. Telemetry memory blocks locked.</div>
+        <div>Type <span style="color: var(--accent);">clue</span> or <span style="color: var(--accent);">help</span> to inspect encrypted fragments.</div>
+        <div>Your mission: Solve 3 cryptographic layers and execute the <span style="color: var(--accent);">override</span> sequence.</div>
+        <div style="border-bottom: 1px solid rgba(255,255,255,0.08); margin: 0.4rem 0;"></div>
+      </div>
+      <div class="console-input-row">
+        <span style="color: var(--accent); font-weight: 700;">investigator@knox:~$</span>
+        <input type="text" id="cli" class="console-input" autofocus autocomplete="off" spellcheck="false" />
+      </div>
+    </div>
+
+    <!-- Panel 2: Evidence & Live Memory Desk -->
+    <div class="panel">
+      <div class="panel-header">
+        <span>EVIDENCE REPOSITORY</span>
+        <span id="progress-tag" style="color: var(--warn);">STAGE 1 OF 3</span>
+      </div>
+      <div class="intel-body">
+        <div class="intel-card">
+          <div class="intel-title">1. Collected Evidence Buffer</div>
+          <div class="evidence-item">
+            <span>PORT_CIPHER:</span>
+            <span id="ev-1" style="color: var(--muted);">[ENCRYPTED]</span>
+          </div>
+          <div class="evidence-item">
+            <span>NODE_TARGET:</span>
+            <span id="ev-2" style="color: var(--muted);">[LOCKED]</span>
+          </div>
+          <div class="evidence-item">
+            <span>OVERRIDE_KEY:</span>
+            <span id="ev-3" style="color: var(--muted);">[LOCKED]</span>
+          </div>
+        </div>
+
+        <div class="intel-card">
+          <div class="intel-title">2. Corrupted Memory Sector Dump</div>
+          <div class="hex-dump" id="hex-view">
+            0x00A1 4E 7A 67 33 4E 77 3D 3D 00 2F 76 61 72 2F 6C 6F 67 0x00B2 73 38 31 39 36 35 5F 42 65 6E 67 61 6C 53 74 61 74 65 0x00C3 47 48 4F 53 54 5F 4F 56 45 52 52 49 44 45 5F 32 30 32 36
+          </div>
+        </div>
+
+        <div class="intel-card">
+          <div class="intel-title">3. Active Clue Brief</div>
+          <div id="hint-box" style="font-size: 0.75rem; color: #94a3b8; line-height: 1.5;">
+            Type <span style="color: var(--accent);">clue</span> in the shell to decode the first corrupted packet payload.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const term = document.getElementById('term-log');
+    const cli = document.getElementById('cli');
+    const ev1 = document.getElementById('ev-1');
+    const ev2 = document.getElementById('ev-2');
+    const ev3 = document.getElementById('ev-3');
+    const hintBox = document.getElementById('hint-box');
+    const progTag = document.getElementById('progress-tag');
+
+    let stage = 1;
+
+    function print(text, color = '#cbd5e1') {
+      const line = document.createElement('div');
+      line.style.color = color;
+      line.innerHTML = text;
+      term.appendChild(line);
+      term.scrollTop = term.scrollHeight;
+    }
+
+    cli.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const val = cli.value.trim();
+        cli.value = '';
+        if (val) processCommand(val);
+      }
+    });
+
+    function processCommand(cmd) {
+      print(`<span style="color:var(--accent);">investigator@knox:~$</span> ${cmd}`);
+      const clean = cmd.toLowerCase().trim();
+
+      if (clean === 'help') {
+        print("COMMAND MATRIX:");
+        print("  clue        - Display current investigation task and payload");
+        print("  inspect     - Inspect memory logs or sector fragments");
+        print("  submit [val]- Submit an answer for the active stage");
+        print("  clear       - Wipe terminal screen");
+        return;
+      }
+
+      if (clean === 'clear') {
+        term.innerHTML = '';
+        return;
+      }
+
+      // STAGE 1: Base64 Decryption
+      if (stage === 1) {
+        if (clean === 'clue' || clean === 'inspect') {
+          print("[CLUE 1]: We intercepted an encrypted string in the UDP socket handshake: <span style='color:var(--warn);'>'Nzg3Nw=='</span>");
+          print("Hint: Decode this Base64 payload. It matches the dedicated port of Knox's live server.");
+          print("Type: <span style='color:var(--accent);'>submit [port]</span>");
+        } else if (clean.startsWith('submit')) {
+          const ans = clean.replace('submit', '').trim();
+          if (ans === '7777') {
+            stage = 2;
+            ev1.textContent = '7777 [SOLVED]';
+            ev1.style.color = 'var(--accent)';
+            progTag.textContent = 'STAGE 2 OF 3';
+            print("[SUCCESS] Port 7777 verified! Base64 decoded.", "var(--accent)");
+            print("[UNLOCKED] Memory sector /var/log/mysql opened. Type <span style='color:var(--accent);'>clue</span> for Stage 2.", "var(--warn)");
+            hintBox.innerHTML = "Stage 2 unlocked. Inspect the database schema associated with Bengal State Roleplay.";
+          } else {
+            print("[ERROR] Verification failed. Check the Base64 value or Knox's live server port.", "var(--danger)");
+          }
+        } else {
+          print("Unknown command. Type <span style='color:var(--accent);'>clue</span> or <span style='color:var(--accent);'>submit [value]</span>.");
+        }
+        return;
+      }
+
+      // STAGE 2: Database Schema Name
+      if (stage === 2) {
+        if (clean === 'clue' || clean === 'inspect') {
+          print("[CLUE 2]: The intruder left a trace inside the remote MySQL persistence cluster (104.234.180.242).");
+          print("What is the exact name of Knox's BSRP database schema?");
+          print("Hint: Check the Shell Vault snippet on the main portfolio page!");
+          print("Type: <span style='color:var(--accent);'>submit [database_name]</span>");
+        } else if (clean.startsWith('submit')) {
+          const ans = clean.replace('submit', '').trim();
+          if (ans === 's81965_bengalstate' || ans === 's81965_BengalState') {
+            stage = 3;
+            ev2.textContent = 's81965_BengalState [SOLVED]';
+            ev2.style.color = 'var(--accent)';
+            progTag.textContent = 'STAGE 3 OF 3';
+            print("[SUCCESS] Database schema confirmed! Root key fragment assembled.", "var(--accent)");
+            print("[FINAL BREACH] The Ghost Daemon's master pass is hidden in the hex dump. Type <span style='color:var(--accent);'>clue</span>.", "var(--warn)");
+            hintBox.innerHTML = "Final stage. Look at the Hex Dump on your right desk to locate the GHOST_OVERRIDE string.";
+          } else {
+            print("[ERROR] Invalid schema identifier. Re-check the backup script on Knox's site.", "var(--danger)");
+          }
+        } else {
+          print("Type <span style='color:var(--accent);'>clue</span> or <span style='color:var(--accent);'>submit [database_name]</span>.");
+        }
+        return;
+      }
+
+      // STAGE 3: Final Key from Hex Dump
+      if (stage === 3) {
+        if (clean === 'clue' || clean === 'inspect') {
+          print("[FINAL CLUE]: Sector 0x00C3 holds the ASCII override string.");
+          print("Find the text starting with 'GHOST_OVERRIDE_...' inside the hex desk.");
+          print("Type: <span style='color:var(--accent);'>override [KEY]</span>");
+        } else if (clean.startsWith('override')) {
+          const ans = clean.replace('override', '').trim().toUpperCase();
+          if (ans === 'GHOST_OVERRIDE_2026') {
+            stage = 4;
+            ev3.textContent = 'GHOST_OVERRIDE_2026 [ROOT]';
+            ev3.style.color = 'var(--accent)';
+            progTag.textContent = 'SYSTEM SECURED';
+            progTag.style.color = 'var(--accent)';
+            print("==================================================", "var(--accent)");
+            print("[CRITICAL OVERRIDE EXECUTED] GHOST DAEMON PURGED!", "var(--accent)");
+            print("Operator Identity: REDIRECTED TO SYSTEM ROOT.", "var(--accent)");
+            print("Congratulations, Investigator! You cracked Knox's telemetry mystery.", "#fff");
+            print("==================================================", "var(--accent)");
+            hintBox.innerHTML = "<strong style='color:var(--accent);'>CASE CLOSED:</strong> All nodes operating at nominal parameters. Full system integrity restored.";
+          } else {
+            print("[REJECTED] Invalid master override key.", "var(--danger)");
+          }
+        } else {
+          print("Execute final sequence: <span style='color:var(--accent);'>override [KEY]</span>");
+        }
+        return;
+      }
+
+      if (stage === 4) {
+        print("System fully stabilized. Ghost node eliminated. Return to <a href='index.html' style='color:var(--accent);'>index.html</a>.", "var(--accent)");
+      }
+    }
+  </script>
+</body>
+</html>
