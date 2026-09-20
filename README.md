@@ -58,3 +58,21 @@ Designed specifically for San Andreas Multiplayer (SA-MP) and open.mp backend ar
 ├── LOGO WB.png        # Official brand emblem & favicon
 ├── .env.example       # Template for environment variables and secrets
 └── .gitignore         # Prevents local credentials and logs from being committed
+```
+## 🚀 Getting Started Locally
+
+### Prerequisites
+- PHP 8.0 or higher with `php-sockets`, `php-mysqli`, and `php-curl` extensions enabled.
+- A modern web browser.
+
+### Installation
+
+1. **Clone the repository**:
+   ```bash
+   git clone [https://github.com/ar-akash0/DEV-PORTFOLIO-WEBSITE.git](https://github.com/ar-akash0/DEV-PORTFOLIO-WEBSITE.git)
+   cd DEV-PORTFOLIO-WEBSITE
+2. **Configure Environment Variables**:
+   Copy the example environment file:
+   ```bash
+   cp .env.example .env
+   
